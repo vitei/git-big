@@ -37,7 +37,7 @@ clean:
 
 $(PROGRAM_BINARY): $(OBJECTS)
 	@mkdir -p $(shell dirname $@)
-	@$(LD) $(LD_FLAGS) -o $@ $^
+	@$(LD) $(LD_FLAGS) -lgit2 -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(shell dirname $@)

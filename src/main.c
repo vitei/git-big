@@ -1,7 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "repo.h"
 #include "commands/init.h"
+
+struct Command
+{
+	const char *command;
+	int (*function)(int argc, char *argv[]);
+};
+
+static const struct Command commands[] =
+{
+	{"gc", NULL},
+	{"init", initRun},
+	{"sync", NULL},
+
+	{"filter-clean", NULL},
+	{"filter-smudge", NULL}
+};
 
 void usageInstructions(void)
 {
@@ -26,31 +43,37 @@ int main(int argc, char *argv[])
 		argc -= 2;
 		argv = &argv[2];
 
-		if(strcmp(command, "gc") == 0)
+		for(int i = 0; i < sizeof(commands) / sizeof(commands[0]); ++i)
 		{
-			return 0;
-		}
-		else if(strcmp(command, "init") == 0)
-		{
-			return initRun(argc, argv);
-		}
-		else if(strcmp(command, "sync") == 0)
-		{
-			return 0;
-		}
-		else if(strcmp(command, "filter-clean") == 0)
-		{
-			return 0;
-		}
-		else if(strcmp(command, "filter-smudge") == 0)
-		{
-			return 0;
-		}
-		else
-		{
-			fprintf(stderr, "Unrecognised command \"%s\"\n", command);
-			return 1;
-		}
-	}
+			const struct Command *cmpCommand = &commands[i];
 
+			if(strcmp(cmpCommand->command, command) == 0)
+			{
+				int error;
+
+				error = git_repository_open_ext(&gRepoHandle, ".", 0, NULL);
+
+				if(error == 0)
+				{
+					int r;
+
+					r = cmpCommand->function(argc, argv);
+
+					git_repository_free(gRepoHandle);
+					gRepoHandle = NULL;
+
+					return r;
+				}
+				else
+				{
+					fprintf(stderr, "Invalid git repository\n");
+					return 1;
+				}
+			}
+		}
+
+		fprintf(stderr, "Unrecognised command \"%s\"\n", command);
+		return 1;
+	}
 }
+
