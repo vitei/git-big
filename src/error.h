@@ -4,8 +4,11 @@
 enum Error
 {
 	kErrorNone,
+	kErrorInternal,
 
 	kErrorInitCorrupt,
+
+	kErrorDBInitCouldNotCreateDirectory,
 
 	kErrorMax
 };
