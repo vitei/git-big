@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "commands/init.h"
+
 void usageInstructions(void)
 {
 	fprintf(stdout, "usage: git big <command> [<args>]\n\n"
@@ -30,7 +32,7 @@ int main(int argc, char *argv[])
 		}
 		else if(strcmp(command, "init") == 0)
 		{
-			return 0;
+			return initRun(argc, argv);
 		}
 		else if(strcmp(command, "sync") == 0)
 		{
