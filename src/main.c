@@ -62,7 +62,13 @@ int main(int argc, char *argv[])
 					git_repository_free(gRepoHandle);
 					gRepoHandle = NULL;
 
-					return r;
+					if(error != kErrorNone)
+					{
+						fprintf(stderr, "git-big encountered an error\n"
+						                "%s\n", gErrorStrings[error]);
+					}
+
+					return error == 0 ? 0 : 1;
 				}
 				else
 				{
