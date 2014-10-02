@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "errors.h"
 #include "repo.h"
 #include "commands/init.h"
 
 struct Command
 {
 	const char *command;
-	int (*function)(int argc, char *argv[]);
+	enum Error (*function)(int argc, char *argv[]);
 };
 
 static const struct Command commands[] =
@@ -20,14 +21,7 @@ static const struct Command commands[] =
 	{"filter-smudge", NULL}
 };
 
-void usageInstructions(void)
-{
-	fprintf(stdout, "usage: git big <command> [<args>]\n\n"
-	                "The following are git-big commands:\n"
-	                "   gc     Clean up file cache\n"
-	                "   init   Initialise git-big for this repository\n"
-	                "   sync   Synchronise big files\n");
-}
+static void usageInstructions(void);
 
 int main(int argc, char *argv[])
 {
@@ -49,15 +43,15 @@ int main(int argc, char *argv[])
 
 			if(strcmp(cmpCommand->command, command) == 0)
 			{
-				int error;
+				int error = 0;
 
 				error = git_repository_open_ext(&gRepoHandle, ".", 0, NULL);
 
 				if(error == 0)
 				{
-					int r;
+					enum Error error = kErrorNone;
 
-					r = cmpCommand->function(argc, argv);
+					error = cmpCommand->function(argc, argv);
 
 					git_repository_free(gRepoHandle);
 					gRepoHandle = NULL;
@@ -68,7 +62,7 @@ int main(int argc, char *argv[])
 						                "%s\n", gErrorStrings[error]);
 					}
 
-					return error == 0 ? 0 : 1;
+					return error == kErrorNone ? 0 : 1;
 				}
 				else
 				{
@@ -81,5 +75,14 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "Unrecognised command \"%s\"\n", command);
 		return 1;
 	}
+}
+
+static void usageInstructions(void)
+{
+	fprintf(stdout, "usage: git big <command> [<args>]\n\n"
+	                "The following are git-big commands:\n"
+	                "   gc     Clean up file cache\n"
+	                "   init   Initialise git-big for this repository\n"
+	                "   sync   Synchronise big files\n");
 }
 

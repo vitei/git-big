@@ -1,7 +1,7 @@
-#include "init.h"
-#include "../repo.h"
+#include "filters.h"
+#include "repo.h"
 
-int filtersInit(void)
+enum Error filtersInit(void)
 {
 	git_config_set_string(gRepoConfigHandle,
 	                      "filter.media.clean", "git-big filter-clean");

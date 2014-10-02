@@ -1,10 +1,10 @@
 #include "init.h"
+#include "../db.h"
+#include "../filters.h"
+#include "../patterns.h"
 #include "../repo.h"
-#include "../db/init.h"
-#include "../filters/init.h"
-#include "../patterns/init.h"
 
-int initRun(int argc, char *argv[])
+enum Error initRun(int argc, char *argv[])
 {
 	int error;
 
@@ -12,6 +12,8 @@ int initRun(int argc, char *argv[])
 
 	if(error == 0)
 	{
+		enum Error error = kErrorNone;
+
 		error = dbInit();
 
 		if(error == kErrorNone)
@@ -34,3 +36,4 @@ int initRun(int argc, char *argv[])
 		return kErrorInitCorrupt;
 	}
 }
+
