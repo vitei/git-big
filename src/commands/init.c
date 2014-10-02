@@ -1,5 +1,3 @@
-#include <stdio.h>
-
 #include "init.h"
 #include "../repo.h"
 #include "../db/init.h"
@@ -25,10 +23,6 @@ int initRun(int argc, char *argv[])
 	}
 	else
 	{
-		// Fatal error...
-		fprintf(stderr, "Fatal git-big error when loading git configuration\n"
-		                "Is your repository corrupt?");
-
-		return 1;
+		return kErrorInitCorrupt;
 	}
 }
