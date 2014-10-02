@@ -13,13 +13,21 @@ int initRun(int argc, char *argv[])
 	if(error == 0)
 	{
 		error = dbInit();
-		error = filtersInit();
-		error = patternsInit();
+
+		if(error == kErrorNone)
+		{
+			error = filtersInit();
+		}
+
+		if(error == kErrorNone)
+		{
+			error = patternsInit();
+		}
 
 		git_config_free(gRepoConfigHandle);
 		gRepoConfigHandle = NULL;
 
-		return 0;
+		return error;
 	}
 	else
 	{
