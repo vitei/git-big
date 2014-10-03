@@ -10,6 +10,8 @@ enum Error
 
 	kErrorDBInitCouldNotCreateDirectory,
 
+	kErrorPatternsInitCouldNotCreatePatternsFile,
+
 	kErrorMax
 };
 

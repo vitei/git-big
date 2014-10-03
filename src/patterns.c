@@ -10,6 +10,26 @@ static const char *getPath(void);
 
 enum Error patternsInit(void)
 {
+	if(!patternsIsFilePresent())
+	{
+		FILE *patternsFile = NULL;
+
+		// We need to make a dummy patterns file
+		patternsFile = fopen(getPath(), "w");
+
+		if(patternsFile)
+		{
+			fprintf(patternsFile, "# Put your git-big rules here!\n"
+			                      "*\n");
+
+			fclose(patternsFile);
+		}
+		else
+		{
+			return kErrorPatternsInitCouldNotCreatePatternsFile;
+		}
+	}
+
 	return kErrorNone;
 }
 

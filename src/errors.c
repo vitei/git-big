@@ -8,5 +8,7 @@ const char *gErrorStrings[kErrorMax] =
 	"Git repository is corrupt",
 
 	"Could not create the git-big database directory",
+
+	"Could not create .gitbig file",
 };
 
