@@ -25,6 +25,20 @@ enum Error dbInit(void)
 	}
 }
 
+enum Error dbQueryFile(char *id, FILE *output)
+{
+
+
+	return kErrorNone;
+}
+
+enum Error dbInsertFile(FILE *access, char *id)
+{
+
+
+	return kErrorNone;
+}
+
 static const char *getPath(void)
 {
 	static char path[1024] = { '\0' };
