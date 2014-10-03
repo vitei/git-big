@@ -13,7 +13,7 @@ enum Error dbInit(void)
 {
 	int error = 0;
 
-	error = mkdir(getPath(), 777);
+	error = mkdir(getPath(), 0777);
 
 	if(error == 0 || errno == EEXIST)
 	{
