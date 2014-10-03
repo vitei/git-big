@@ -12,6 +12,7 @@ enum Error
 
 	kErrorPatternsInitCouldNotCreatePatternsFile,
 
+	kErrorDBQueryFileCouldNotFindFile,
 	kErrorDBInsertFileCouldNotCreateFile,
 
 	kErrorMax

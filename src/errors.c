@@ -11,6 +11,7 @@ const char *gErrorStrings[kErrorMax] =
 
 	"Could not create .gitbig file",
 
+	"Could not find database file, please run git big sync"
 	"Could not insert file into database",
 };
 

@@ -28,9 +28,33 @@ enum Error dbInit(void)
 
 enum Error dbQueryFile(char *id, FILE *output)
 {
+	char path[1024] = { '\0' };
+	FILE *file = NULL;
 
+	snprintf(path, sizeof(path), "%s%s", getPath(), id);
 
-	return kErrorNone;
+	file = fopen(path, "r");
+
+	if(file)
+	{
+		char buffer[1024];
+		size_t readSize;
+
+		do
+		{
+			readSize = fread(buffer, 1, sizeof(buffer), file);
+			fwrite(buffer, 1, readSize, output);
+		}
+		while(readSize == sizeof(buffer));
+
+		fclose(file);
+
+		return kErrorNone;
+	}
+	else
+	{
+		return kErrorDBQueryFileCouldNotFindFile;
+	}
 }
 
 enum Error dbInsertFile(FILE *input, char *id)
