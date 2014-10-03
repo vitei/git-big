@@ -1,6 +1,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/stat.h>
+#include <openssl/sha.h>
 
 #include "db.h"
 #include "repo.h"
@@ -32,11 +33,49 @@ enum Error dbQueryFile(char *id, FILE *output)
 	return kErrorNone;
 }
 
-enum Error dbInsertFile(FILE *access, char *id)
+enum Error dbInsertFile(FILE *input, char *id)
 {
+	char tmpPath[1024] = { '\0' };
+	FILE *file = NULL;
+	SHA_CTX ctx;
+	char buffer[1024];
+	size_t size = 0;
 
+	SHA1_Init(&ctx);
 
-	return kErrorNone;
+	snprintf(tmpPath, sizeof(tmpPath), "%stmp", getPath());
+	file = fopen(tmpPath, "wb");
+
+	if(file)
+	{
+		char path[1024] = { '\0' };
+
+		do
+		{
+			size = fread(buffer, 1, sizeof(buffer), input);
+			fwrite(buffer, 1, size, file);
+			SHA1_Update(&ctx, (unsigned char *)buffer, size);
+		}
+		while(size == sizeof(buffer));
+
+		fclose(file);
+
+		SHA1_Final((unsigned char *)buffer, &ctx);
+
+		for(int i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
+		{
+			sprintf(&id[j], "%02x", (unsigned char)buffer[i]);
+		}
+
+		snprintf(path, sizeof(path), "%s%s", getPath(), id);
+		rename(tmpPath, path);
+
+		return kErrorNone;
+	}
+	else
+	{
+		return kErrorDBInsertFileCouldNotCreateFile;
+	}
 }
 
 static const char *getPath(void)

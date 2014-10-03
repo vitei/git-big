@@ -8,6 +8,6 @@
 enum Error dbInit(void);
 
 enum Error dbQueryFile(char *id, FILE *output);
-enum Error dbInsertFile(FILE *access, char *id);
+enum Error dbInsertFile(FILE *input, char *id);
 
 #endif

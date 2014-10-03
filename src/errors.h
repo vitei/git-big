@@ -12,6 +12,8 @@ enum Error
 
 	kErrorPatternsInitCouldNotCreatePatternsFile,
 
+	kErrorDBInsertFileCouldNotCreateFile,
+
 	kErrorMax
 };
 
