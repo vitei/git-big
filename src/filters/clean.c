@@ -5,11 +5,16 @@
 
 enum Error filterCleanRun(int argc, char *argv[])
 {
+	enum Error error = kErrorNone;
 	char hash[40];
 
-	dbInsertFile(stdin, hash);
-	fwrite(hash, 1, sizeof(hash), stdout);
+	error = dbInsertFile(stdin, hash);
 
-	return kErrorNone;
+	if(error == kErrorNone)
+	{
+		fwrite(hash, 1, sizeof(hash), stdout);
+	}
+
+	return error;
 }
 
