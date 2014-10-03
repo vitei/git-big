@@ -1,7 +1,20 @@
 #include <errno.h>
 #include <stdio.h>
 #include <sys/stat.h>
-#include <openssl/sha.h>
+
+#if defined(TARGET_OS_OSX)
+	#include <CommonCrypto/CommonDigest.h>
+
+	#define SHA_CTX CC_SHA1_CTX
+	#define SHA1_Init CC_SHA1_Init
+	#define SHA1_Update CC_SHA1_Update
+	#define SHA1_Final CC_SHA1_Final
+	#define SHA_DIGEST_LENGTH CC_SHA1_DIGEST_LENGTH
+#elif defined(TARGET_OS_LINUX)
+	#include <openssl/sha.h>
+#else
+	#error Unsupported platform
+#endif
 
 #include "db.h"
 #include "repo.h"
