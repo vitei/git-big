@@ -9,25 +9,32 @@
 #include "filters/clean.h"
 #include "filters/smudge.h"
 
+enum RequirementBehaviour
+{
+	kRequirementUnrequired,
+	kRequirementRequired,
+	kRequirementPassthrough
+};
+
 struct Command
 {
 	const char *command;
 	enum Error (*function)(int argc, char *argv[]);
-	bool requiresGitBig;
+	enum RequirementBehaviour requiresGitBig;
 };
 
 static const struct Command commands[] =
 {
-	{"gc", NULL, true},
-	{"init", commandInitRun, false},
-	{"sync", NULL, true},
+	{"gc", NULL, kRequirementRequired},
+	{"init", commandInitRun, kRequirementUnrequired},
+	{"sync", NULL, kRequirementRequired},
 
-	// These filters will just pass through on no patterns file being present
-	{"filter-clean", filterCleanRun, false},
-	{"filter-smudge", filterSmudgeRun, false},
+	{"filter-clean", filterCleanRun, kRequirementPassthrough},
+	{"filter-smudge", filterSmudgeRun, kRequirementPassthrough},
 };
 
 static void usageInstructions(void);
+static void passthrough(void);
 
 int main(int argc, char *argv[])
 {
@@ -55,7 +62,8 @@ int main(int argc, char *argv[])
 
 				if(error == 0)
 				{
-					if(!cmpCommand->requiresGitBig || patternsIsFilePresent())
+					if(   cmpCommand->requiresGitBig == kRequirementUnrequired
+					   || patternsIsFilePresent())
 					{
 						enum Error error = kErrorNone;
 
@@ -71,6 +79,11 @@ int main(int argc, char *argv[])
 						}
 
 						return error == kErrorNone ? 0 : 1;
+					}
+					else if(cmpCommand->requiresGitBig == kRequirementPassthrough)
+					{
+						passthrough();
+						return 0;
 					}
 					else
 					{
@@ -98,5 +111,18 @@ static void usageInstructions(void)
 	                "   gc     Clean up file cache\n"
 	                "   init   Initialise git-big for this repository\n"
 	                "   sync   Synchronise big files\n");
+}
+
+static void passthrough(void)
+{
+	char buffer[1024];
+	size_t readSize;
+
+	do
+	{
+		readSize = fread(buffer, 1, sizeof(buffer), stdin);
+		fwrite(buffer, 1, readSize, stdout);
+	}
+	while(readSize == sizeof(buffer));
 }
 
