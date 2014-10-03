@@ -4,7 +4,7 @@
 #include "../patterns.h"
 #include "../repo.h"
 
-enum Error initRun(int argc, char *argv[])
+enum Error commandInitRun(int argc, char *argv[])
 {
 	int error;
 

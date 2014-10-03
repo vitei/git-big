@@ -14,7 +14,7 @@ struct Command
 static const struct Command commands[] =
 {
 	{"gc", NULL},
-	{"init", initRun},
+	{"init", commandInitRun},
 	{"sync", NULL},
 
 	{"filter-clean", NULL},

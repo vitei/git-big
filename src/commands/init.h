@@ -3,6 +3,6 @@
 
 #include "../errors.h"
 
-enum Error initRun(int argc, char *argv[]);
+enum Error commandInitRun(int argc, char *argv[]);
 
 #endif
