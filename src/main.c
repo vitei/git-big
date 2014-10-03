@@ -5,6 +5,7 @@
 #include "repo.h"
 #include "commands/init.h"
 #include "filters/clean.h"
+#include "filters/smudge.h"
 
 struct Command
 {
@@ -19,7 +20,7 @@ static const struct Command commands[] =
 	{"sync", NULL},
 
 	{"filter-clean", filterCleanRun},
-	{"filter-smudge", NULL},
+	{"filter-smudge", filterSmudgeRun},
 };
 
 static void usageInstructions(void);
