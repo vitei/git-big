@@ -1,7 +1,9 @@
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "errors.h"
+#include "patterns.h"
 #include "repo.h"
 #include "commands/init.h"
 #include "filters/clean.h"
@@ -11,16 +13,18 @@ struct Command
 {
 	const char *command;
 	enum Error (*function)(int argc, char *argv[]);
+	bool requiresGitBig;
 };
 
 static const struct Command commands[] =
 {
-	{"gc", NULL},
-	{"init", commandInitRun},
-	{"sync", NULL},
+	{"gc", NULL, true},
+	{"init", commandInitRun, false},
+	{"sync", NULL, true},
 
-	{"filter-clean", filterCleanRun},
-	{"filter-smudge", filterSmudgeRun},
+	// These filters will just pass through on no patterns file being present
+	{"filter-clean", filterCleanRun, false},
+	{"filter-smudge", filterSmudgeRun, false},
 };
 
 static void usageInstructions(void);
@@ -51,20 +55,28 @@ int main(int argc, char *argv[])
 
 				if(error == 0)
 				{
-					enum Error error = kErrorNone;
-
-					error = cmpCommand->function(argc, argv);
-
-					git_repository_free(gRepoHandle);
-					gRepoHandle = NULL;
-
-					if(error != kErrorNone)
+					if(!cmpCommand->requiresGitBig || patternsIsFilePresent())
 					{
-						fprintf(stderr, "git-big encountered an error\n"
-						                "%s\n", gErrorStrings[error]);
-					}
+						enum Error error = kErrorNone;
 
-					return error == kErrorNone ? 0 : 1;
+						error = cmpCommand->function(argc, argv);
+
+						git_repository_free(gRepoHandle);
+						gRepoHandle = NULL;
+
+						if(error != kErrorNone)
+						{
+							fprintf(stderr, "git-big encountered an error\n"
+							                "%s\n", gErrorStrings[error]);
+						}
+
+						return error == kErrorNone ? 0 : 1;
+					}
+					else
+					{
+						fprintf(stderr, "This repository is not managed using git-big\n");
+						return 1;
+					}
 				}
 				else
 				{
