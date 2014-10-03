@@ -4,6 +4,7 @@
 #include "errors.h"
 #include "repo.h"
 #include "commands/init.h"
+#include "filters/clean.h"
 
 struct Command
 {
@@ -17,8 +18,8 @@ static const struct Command commands[] =
 	{"init", commandInitRun},
 	{"sync", NULL},
 
-	{"filter-clean", NULL},
-	{"filter-smudge", NULL}
+	{"filter-clean", filterCleanRun},
+	{"filter-smudge", NULL},
 };
 
 static void usageInstructions(void);
