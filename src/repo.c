@@ -1,5 +1,5 @@
 #include "repo.h"
 
-git_repository *gRepoHandle = NULL;
-git_config *gRepoConfigHandle = NULL;
+git_repository *repo_handle = NULL;
+git_config *repo_config_handle = NULL;
 

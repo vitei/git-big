@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include "errors.h"
 
-enum Error patternsInit(void);
+enum Error patterns_init(void);
 
-bool patternsIsFilePresent(void);
+bool patterns_file_is_present(void);
 
 #endif

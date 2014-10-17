@@ -19,60 +19,60 @@
 #include "db.h"
 #include "repo.h"
 
-static const char *kDBDirectory = "big";
+static const char * const DB_DIRECTORY = "big";
 
-static const char *getPath(void);
+static const char *get_path(void);
 
-enum Error dbInit(void)
+enum Error db_init(void)
 {
 	int error = 0;
 
-	error = mkdir(getPath(), 0777);
+	error = mkdir(get_path(), 0777);
 
 	if(error == 0 || errno == EEXIST)
 	{
-		return kErrorNone;
+		return ERROR_NONE;
 	}
 	else
 	{
-		return kErrorDBInitCouldNotCreateDirectory;
+		return ERROR_DB_INIT_COULD_NOT_CREATE_DIRECTORY;
 	}
 }
 
-enum Error dbQueryFile(char *id, FILE *output)
+enum Error db_file_query(char *id, FILE *output)
 {
 	char path[1024] = { '\0' };
 	FILE *file = NULL;
 
-	snprintf(path, sizeof(path), "%s%s", getPath(), id);
+	snprintf(path, sizeof(path), "%s%s", get_path(), id);
 
 	file = fopen(path, "r");
 
 	if(file)
 	{
 		char buffer[1024];
-		size_t readSize;
+		size_t read_size;
 
 		do
 		{
-			readSize = fread(buffer, 1, sizeof(buffer), file);
-			fwrite(buffer, 1, readSize, output);
+			read_size = fread(buffer, 1, sizeof(buffer), file);
+			fwrite(buffer, 1, read_size, output);
 		}
-		while(readSize == sizeof(buffer));
+		while(read_size == sizeof(buffer));
 
 		fclose(file);
 
-		return kErrorNone;
+		return ERROR_NONE;
 	}
 	else
 	{
-		return kErrorDBQueryFileCouldNotFindFile;
+		return ERROR_DB_FILE_QUERY_COULD_NOT_FIND_FILE;
 	}
 }
 
-enum Error dbInsertFile(FILE *input, char *id)
+enum Error db_file_insert(FILE *input, char *id)
 {
-	char tmpPath[1024] = { '\0' };
+	char tmp_path[1024] = { '\0' };
 	FILE *file = NULL;
 	SHA_CTX ctx;
 	char buffer[1024];
@@ -80,8 +80,8 @@ enum Error dbInsertFile(FILE *input, char *id)
 
 	SHA1_Init(&ctx);
 
-	snprintf(tmpPath, sizeof(tmpPath), "%stmp", getPath());
-	file = fopen(tmpPath, "wb");
+	snprintf(tmp_path, sizeof(tmp_path), "%stmp", get_path());
+	file = fopen(tmp_path, "wb");
 
 	if(file)
 	{
@@ -104,27 +104,27 @@ enum Error dbInsertFile(FILE *input, char *id)
 			sprintf(&id[j], "%02x", (unsigned char)buffer[i]);
 		}
 
-		snprintf(path, sizeof(path), "%s%s", getPath(), id);
-		rename(tmpPath, path);
+		snprintf(path, sizeof(path), "%s%s", get_path(), id);
+		rename(tmp_path, path);
 
-		return kErrorNone;
+		return ERROR_NONE;
 	}
 	else
 	{
-		return kErrorDBInsertFileCouldNotCreateFile;
+		return ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
 	}
 }
 
-static const char *getPath(void)
+static const char *get_path(void)
 {
 	static char path[1024] = { '\0' };
 
 	if(!*path)
 	{
-		const char *dotGitDir = git_repository_path(gRepoHandle);
+		const char *dot_git_dir = git_repository_path(repo_handle);
 
 		// FIXME: unsafe for large paths
-		snprintf(path, sizeof(path), "%s%s/", dotGitDir, kDBDirectory);
+		snprintf(path, sizeof(path), "%s%s/", dot_git_dir, DB_DIRECTORY);
 	}
 
 	return (const char *)path;

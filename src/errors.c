@@ -1,6 +1,6 @@
 #include "errors.h"
 
-const char *gErrorStrings[kErrorMax] =
+const char *error_string_table[ERROR_MAX] =
 {
 	"",
 	"Internal error",

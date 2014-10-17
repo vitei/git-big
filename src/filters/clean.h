@@ -3,7 +3,7 @@
 
 #include "../errors.h"
 
-enum Error filterCleanRun(int argc, char *argv[]);
+enum Error filter_clean_run(int argc, char *argv[]);
 
 #endif
 

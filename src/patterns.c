@@ -4,50 +4,50 @@
 #include "patterns.h"
 #include "repo.h"
 
-static const char *kPatternsFile = ".gitbig";
+static const char *const PATTERNS_FILE = ".gitbig";
 
-static const char *getPath(void);
+static const char *get_path(void);
 
-enum Error patternsInit(void)
+enum Error patterns_init(void)
 {
-	if(!patternsIsFilePresent())
+	if(!patterns_file_is_present())
 	{
-		FILE *patternsFile = NULL;
+		FILE *patterns_file = NULL;
 
 		// We need to make a dummy patterns file
-		patternsFile = fopen(getPath(), "w");
+		patterns_file = fopen(get_path(), "w");
 
-		if(patternsFile)
+		if(patterns_file)
 		{
-			fprintf(patternsFile, "# Put your git-big rules here!\n"
+			fprintf(patterns_file, "# Put your git-big rules here!\n"
 			                      "*\n");
 
-			fclose(patternsFile);
+			fclose(patterns_file);
 		}
 		else
 		{
-			return kErrorPatternsInitCouldNotCreatePatternsFile;
+			return ERROR_PATTERNS_INIT_COULD_NOT_CREATE_PATTERNS_FILE;
 		}
 	}
 
-	return kErrorNone;
+	return ERROR_NONE;
 }
 
-bool patternsIsFilePresent(void)
+bool patterns_file_is_present(void)
 {
-	return access(getPath(), F_OK) != -1;
+	return access(get_path(), F_OK) != -1;
 }
 
-static const char *getPath(void)
+static const char *get_path(void)
 {
 	static char path[1024] = { '\0' };
 
 	if(!*path)
 	{
-		const char *workingDir = git_repository_workdir(gRepoHandle);
+		const char *working_dir = git_repository_workdir(repo_handle);
 
 		// FIXME: unsafe for large paths
-		snprintf(path, sizeof(path), "%s%s", workingDir, kPatternsFile);
+		snprintf(path, sizeof(path), "%s%s", working_dir, PATTERNS_FILE);
 	}
 
 	return (const char *)path;

@@ -3,6 +3,6 @@
 
 #include "errors.h"
 
-enum Error filtersInit(void);
+enum Error filters_init(void);
 
 #endif

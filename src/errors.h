@@ -3,22 +3,22 @@
 
 enum Error
 {
-	kErrorNone,
-	kErrorInternal,
+	ERROR_NONE,
+	ERROR_INTERNAL,
 
-	kErrorInitCorrupt,
+	ERROR_INIT_CORRUPT,
 
-	kErrorDBInitCouldNotCreateDirectory,
+	ERROR_DB_INIT_COULD_NOT_CREATE_DIRECTORY,
 
-	kErrorPatternsInitCouldNotCreatePatternsFile,
+	ERROR_PATTERNS_INIT_COULD_NOT_CREATE_PATTERNS_FILE,
 
-	kErrorDBQueryFileCouldNotFindFile,
-	kErrorDBInsertFileCouldNotCreateFile,
+	ERROR_DB_FILE_QUERY_COULD_NOT_FIND_FILE,
+	ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE,
 
-	kErrorMax
+	ERROR_MAX
 };
 
-extern const char *gErrorStrings[kErrorMax];
+extern const char *error_string_table[ERROR_MAX];
 
 #endif
 

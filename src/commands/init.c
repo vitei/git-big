@@ -4,36 +4,36 @@
 #include "../patterns.h"
 #include "../repo.h"
 
-enum Error commandInitRun(int argc, char *argv[])
+enum Error command_init_run(int argc, char *argv[])
 {
 	int error;
 
-	error = git_repository_config(&gRepoConfigHandle, gRepoHandle);
+	error = git_repository_config(&repo_config_handle, repo_handle);
 
 	if(error == 0)
 	{
-		enum Error error = kErrorNone;
+		enum Error error = ERROR_NONE;
 
-		error = dbInit();
+		error = db_init();
 
-		if(error == kErrorNone)
+		if(error == ERROR_NONE)
 		{
-			error = filtersInit();
+			error = filters_init();
 		}
 
-		if(error == kErrorNone)
+		if(error == ERROR_NONE)
 		{
-			error = patternsInit();
+			error = patterns_init();
 		}
 
-		git_config_free(gRepoConfigHandle);
-		gRepoConfigHandle = NULL;
+		git_config_free(repo_config_handle);
+		repo_config_handle = NULL;
 
 		return error;
 	}
 	else
 	{
-		return kErrorInitCorrupt;
+		return ERROR_INIT_CORRUPT;
 	}
 }
 

@@ -5,9 +5,9 @@
 
 #include "errors.h"
 
-enum Error dbInit(void);
+enum Error db_init(void);
 
-enum Error dbQueryFile(char *id, FILE *output);
-enum Error dbInsertFile(FILE *input, char *id);
+enum Error db_file_query(char *id, FILE *output);
+enum Error db_file_insert(FILE *input, char *id);
 
 #endif

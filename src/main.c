@@ -11,36 +11,37 @@
 
 enum RequirementBehaviour
 {
-	kRequirementUnrequired,
-	kRequirementRequired,
-	kRequirementPassthrough
+	REQUIREMENT_UNREQUIRED,
+	REQUIREMENT_REQUIRED,
+	REQUIREMENT_PASSTHROUGH
 };
 
 struct Command
 {
 	const char *command;
 	enum Error (*function)(int argc, char *argv[]);
-	enum RequirementBehaviour requiresGitBig;
+	enum RequirementBehaviour requirement;
 };
 
 static const struct Command commands[] =
 {
-	{"gc", NULL, kRequirementRequired},
-	{"init", commandInitRun, kRequirementUnrequired},
-	{"sync", NULL, kRequirementRequired},
+	{"gc", NULL, REQUIREMENT_REQUIRED},
+	{"init", command_init_run, REQUIREMENT_UNREQUIRED},
+	{"sync", NULL, REQUIREMENT_REQUIRED},
 
-	{"filter-clean", filterCleanRun, kRequirementPassthrough},
-	{"filter-smudge", filterSmudgeRun, kRequirementPassthrough},
+	{"filter-clean", filter_clean_run, REQUIREMENT_PASSTHROUGH},
+	{"filter-smudge", filter_smudge_run, REQUIREMENT_PASSTHROUGH},
 };
 
-static void usageInstructions(void);
+static void usage_instructions(void);
 static void passthrough(void);
 
 int main(int argc, char *argv[])
 {
 	if(argc < 2)
 	{
-		usageInstructions();
+		usage_instructions();
+
 		return 0;
 	}
 	else
@@ -52,59 +53,67 @@ int main(int argc, char *argv[])
 
 		for(int i = 0; i < sizeof(commands) / sizeof(commands[0]); ++i)
 		{
-			const struct Command *cmpCommand = &commands[i];
+			const struct Command *cmp_command = &commands[i];
 
-			if(strcmp(cmpCommand->command, command) == 0)
+			if(strcmp(cmp_command->command, command) == 0)
 			{
 				int error = 0;
 
-				error = git_repository_open_ext(&gRepoHandle, ".", 0, NULL);
+				error = git_repository_open_ext(&repo_handle, ".", 0, NULL);
 
 				if(error == 0)
 				{
-					if(   cmpCommand->requiresGitBig == kRequirementUnrequired
-					   || patternsIsFilePresent())
+					if(   cmp_command->requirement == REQUIREMENT_UNREQUIRED
+					   || patterns_file_is_present())
 					{
-						enum Error error = kErrorNone;
+						enum Error error = ERROR_NONE;
 
-						error = cmpCommand->function(argc, argv);
+						error = cmp_command->function(argc, argv);
 
-						git_repository_free(gRepoHandle);
-						gRepoHandle = NULL;
+						git_repository_free(repo_handle);
+						repo_handle = NULL;
 
-						if(error != kErrorNone)
+						if(error != ERROR_NONE)
 						{
 							fprintf(stderr, "git-big encountered an error\n"
-							                "%s\n", gErrorStrings[error]);
-						}
+							                "%s\n", error_string_table[error]);
 
-						return error == kErrorNone ? 0 : 1;
+							return 1;
+						}
+						else
+						{
+							return 0;
+						}
 					}
-					else if(cmpCommand->requiresGitBig == kRequirementPassthrough)
+					else if(cmp_command->requirement == REQUIREMENT_PASSTHROUGH)
 					{
 						passthrough();
+
 						return 0;
 					}
 					else
 					{
 						fprintf(stderr, "This repository is not managed using git-big\n");
+
 						return 1;
 					}
 				}
 				else
 				{
 					fprintf(stderr, "Invalid git repository\n");
+
 					return 1;
 				}
 			}
 		}
 
 		fprintf(stderr, "Unrecognised command \"%s\"\n", command);
+
 		return 1;
 	}
 }
 
-static void usageInstructions(void)
+static void usage_instructions(void)
 {
 	fprintf(stdout, "usage: git big <command> [<args>]\n\n"
 	                "The following are git-big commands:\n"
@@ -116,13 +125,13 @@ static void usageInstructions(void)
 static void passthrough(void)
 {
 	char buffer[1024];
-	size_t readSize;
+	size_t read_size;
 
 	do
 	{
-		readSize = fread(buffer, 1, sizeof(buffer), stdin);
-		fwrite(buffer, 1, readSize, stdout);
+		read_size = fread(buffer, 1, sizeof(buffer), stdin);
+		fwrite(buffer, 1, read_size, stdout);
 	}
-	while(readSize == sizeof(buffer));
+	while(read_size == sizeof(buffer));
 }
 
