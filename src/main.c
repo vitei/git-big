@@ -3,34 +3,25 @@
 #include <string.h>
 
 #include "errors.h"
-#include "patterns.h"
 #include "repo.h"
 #include "commands/init.h"
 #include "filters/clean.h"
 #include "filters/smudge.h"
 
-enum RequirementBehaviour
-{
-	REQUIREMENT_UNREQUIRED,
-	REQUIREMENT_REQUIRED,
-	REQUIREMENT_PASSTHROUGH
-};
-
 struct Command
 {
 	const char *command;
 	enum Error (*function)(int argc, char *argv[]);
-	enum RequirementBehaviour requirement;
 };
 
 static const struct Command commands[] =
 {
-	{"gc", NULL, REQUIREMENT_REQUIRED},
-	{"init", command_init_run, REQUIREMENT_UNREQUIRED},
-	{"sync", NULL, REQUIREMENT_REQUIRED},
+	{"gc",            NULL},
+	{"init",          command_init_run},
+	{"sync",          NULL},
 
-	{"filter-clean", filter_clean_run, REQUIREMENT_PASSTHROUGH},
-	{"filter-smudge", filter_smudge_run, REQUIREMENT_PASSTHROUGH},
+	{"filter-clean",  filter_clean_run},
+	{"filter-smudge", filter_smudge_run},
 };
 
 static void usage_instructions(void);
@@ -63,39 +54,29 @@ int main(int argc, char *argv[])
 
 				if(error == 0)
 				{
-					if(   cmp_command->requirement == REQUIREMENT_UNREQUIRED
-					   || patterns_file_is_present())
-					{
-						enum Error error = ERROR_NONE;
+					enum Error error = ERROR_NONE;
 
-						error = cmp_command->function(argc, argv);
+					error = cmp_command->function(argc, argv);
 
-						git_repository_free(repo_handle);
-						repo_handle = NULL;
+					git_repository_free(repo_handle);
+					repo_handle = NULL;
 
-						if(error != ERROR_NONE)
-						{
-							fprintf(stderr, "git-big encountered an error\n"
-							                "%s\n", error_string_table[error]);
-
-							return 1;
-						}
-						else
-						{
-							return 0;
-						}
-					}
-					else if(cmp_command->requirement == REQUIREMENT_PASSTHROUGH)
+					if(error == ERROR_RUN_PASSTHROUGH)
 					{
 						passthrough();
 
 						return 0;
 					}
-					else
+					else if(error != ERROR_NONE)
 					{
-						fprintf(stderr, "This repository is not managed using git-big\n");
+						fprintf(stderr, "git-big encountered an error\n"
+										"%s\n", error_string_table[error]);
 
 						return 1;
+					}
+					else
+					{
+						return 0;
 					}
 				}
 				else
