@@ -1,0 +1,15 @@
+language: c
+
+script: make all
+
+before_script:
+    - sudo apt-get update -qq
+    - sudo apt-get install -qq cmake
+    - git clone --quiet https://github.com/libgit2/libgit2.git
+    - cd libgit2
+    - mkdir build
+    - cd build
+    - cmake .. > /dev/null
+    - sudo cmake --build . --target install > /dev/null
+    - cd ../..
+
