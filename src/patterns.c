@@ -20,7 +20,7 @@ enum Error patterns_init(void)
 		if(patterns_file)
 		{
 			fprintf(patterns_file, "# Put your git-big rules here!\n"
-			                      "*\n");
+			                       "*\n");
 
 			fclose(patterns_file);
 		}
