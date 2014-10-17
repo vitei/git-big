@@ -17,30 +17,30 @@ LD_FLAGS:=
 
 ################################################################################
 
-ifeq ($(OS),Windows_NT)
-    CPP_FLAGS+=-D TARGET_OS_WINDOWS
-    TARGET_LIBRARIES:=
-else
-    UNAME_S:=$(shell uname -s)
-
-    ifeq ($(UNAME_S),Linux)
-        CPP_FLAGS+=-D TARGET_OS_LINUX
-        TARGET_LIBRARIES:=-lcrypto
-    endif
-    ifeq ($(UNAME_S),Darwin)
-        CPP_FLAGS+=-D TARGET_OS_OSX
-        TARGET_LIBRARIES:=
-    endif
-endif
-
-################################################################################
-
 SOURCES:=$(shell find $(SRC_DIR) -type f -name "*.c")
 OBJECTS:=$(patsubst $(SRC_DIR)/%,$(OBJ_DIR)/%,$(SOURCES:.c=.o))
 
 DEPS:=$(OBJECTS:.o=.deps)
 
 PROGRAM_BINARY:=$(BIN_DIR)/$(PROGRAM)
+
+LIBRARIES:=git2
+
+################################################################################
+
+ifeq ($(OS),Windows_NT)
+    CPP_FLAGS+=-D TARGET_OS_WINDOWS
+else
+    UNAME_S:=$(shell uname -s)
+
+    ifeq ($(UNAME_S),Linux)
+        CPP_FLAGS+=-D TARGET_OS_LINUX
+        LIBRARIES+=crypto
+    endif
+    ifeq ($(UNAME_S),Darwin)
+        CPP_FLAGS+=-D TARGET_OS_OSX
+    endif
+endif
 
 ################################################################################
 
@@ -55,7 +55,7 @@ clean:
 
 $(PROGRAM_BINARY): $(OBJECTS)
 	@mkdir -p $(shell dirname $@)
-	@$(LD) $(LD_FLAGS) -lgit2 $(TARGET_LIBRARIES) -o $@ $^
+	@$(LD) $(LD_FLAGS) $(foreach LIBRARY,$(LIBRARIES),-l$(LIBRARY)) -o $@ $^
 
 $(OBJ_DIR)/%.o: $(SRC_DIR)/%.c
 	@mkdir -p $(shell dirname $@)
