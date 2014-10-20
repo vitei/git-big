@@ -6,6 +6,9 @@
 
 enum Error patterns_init(void);
 
-bool patterns_file_is_present(void);
+bool patterns_file_is_present_wc(void);
+
+bool pattern_match_wc(char *filename);
 
 #endif
+

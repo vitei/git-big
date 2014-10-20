@@ -6,7 +6,9 @@
 
 enum Error filter_clean_run(int argc, char *argv[])
 {
-	if(patterns_file_is_present())
+	char *filename = argv[0];
+
+	if(patterns_file_is_present_wc() && pattern_match_wc(filename))
 	{
 		enum Error error = ERROR_NONE;
 		char hash[41];
