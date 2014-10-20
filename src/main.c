@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 					else if(error != ERROR_NONE)
 					{
 						fprintf(stderr, "git-big encountered an error\n"
-										"%s\n", error_string_table[error]);
+						                "%s\n", error_string_table[error]);
 
 						return 1;
 					}
