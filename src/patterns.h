@@ -7,8 +7,10 @@
 enum Error patterns_init(void);
 
 bool patterns_file_is_present_wc(void);
+bool patterns_file_is_present_head(void);
 
 bool pattern_match_wc(char *filename);
+bool pattern_match_head(char *filename);
 
 #endif
 

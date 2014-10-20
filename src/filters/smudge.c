@@ -6,7 +6,9 @@
 
 enum Error filter_smudge_run(int argc, char *argv[])
 {
-	if(patterns_file_is_present()) // FIXME: this is the wrong check
+	char *filename = argv[0];
+
+	if(patterns_file_is_present_head() && pattern_match_head(filename))
 	{
 		enum Error error = ERROR_NONE;
 		char hash[41];
