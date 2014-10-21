@@ -17,7 +17,9 @@ typedef char (*GetCharFunction)(void *);
 static const char *const PATTERNS_FILE = ".gitbig";
 
 static const char *get_path(void);
+static git_blob *patterns_file_blob_index(void);
 static git_blob *patterns_file_blob_head(void);
+static bool pattern_match_blob(char *filename, git_blob *blob);
 static bool pattern_match(char *filename, GetCharFunction get_char, void *data);
 static unsigned char bgetc(struct BlobReaderData *data);
 
@@ -51,6 +53,11 @@ bool patterns_file_is_present_wc(void)
 	return access(get_path(), F_OK) != -1;
 }
 
+bool patterns_file_is_present_index(void)
+{
+	return patterns_file_blob_index() != NULL;
+}
+
 bool patterns_file_is_present_head(void)
 {
 	return patterns_file_blob_head() != NULL;
@@ -77,29 +84,15 @@ bool pattern_match_wc(char *filename)
 	}
 }
 
+bool pattern_match_index(char *filename)
+{
+	return pattern_match_blob(filename, patterns_file_blob_index());
+}
+
+
 bool pattern_match_head(char *filename)
 {
-	git_blob *blob;
-
-	blob = patterns_file_blob_head();
-
-	if(blob)
-	{
-		bool r = false;
-		struct BlobReaderData patterns_data;
-
-		patterns_data.data = git_blob_rawcontent(blob);
-		patterns_data.data_size = git_blob_rawsize(blob);
-		patterns_data.i = 0;
-
-		r = pattern_match(filename, (GetCharFunction)bgetc, &patterns_data);
-
-		return r;
-	}
-	else
-	{
-		return false;
-	}
+	return pattern_match_blob(filename, patterns_file_blob_head());
 }
 
 static const char *get_path(void)
@@ -115,6 +108,35 @@ static const char *get_path(void)
 	}
 
 	return (const char *)path;
+}
+
+static git_blob *patterns_file_blob_index(void)
+{
+	static git_blob *blob = NULL;
+
+	if(!blob)
+	{
+		int error = 0;
+		const git_index_entry *entry = NULL;
+		git_oid *oid = NULL;
+		git_index *idx = NULL;
+
+		entry = git_index_get_bypath(idx, PATTERNS_FILE, 0);
+
+		if(entry == NULL)
+		{
+			return NULL;
+		}
+
+		error = git_blob_lookup(&blob, repo_handle, &entry->id);
+
+		if(error != 0)
+		{
+			return NULL;
+		}
+	}
+
+	return blob;
 }
 
 static git_blob *patterns_file_blob_head(void)
@@ -192,6 +214,28 @@ static git_blob *patterns_file_blob_head(void)
 
 	return blob;
 }
+
+static bool pattern_match_blob(char *filename, git_blob *blob)
+{
+	if(blob)
+	{
+		bool r = false;
+		struct BlobReaderData patterns_data;
+
+		patterns_data.data = git_blob_rawcontent(blob);
+		patterns_data.data_size = git_blob_rawsize(blob);
+		patterns_data.i = 0;
+
+		r = pattern_match(filename, (GetCharFunction)bgetc, &patterns_data);
+
+		return r;
+	}
+	else
+	{
+		return false;
+	}
+}
+
 
 static bool pattern_match(char *filename, GetCharFunction get_char, void *data)
 {
