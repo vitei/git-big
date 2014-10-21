@@ -7,6 +7,7 @@
 #include "commands/init.h"
 #include "filters/clean.h"
 #include "filters/smudge.h"
+#include "hooks/pre_commit.h"
 
 struct Command
 {
@@ -16,12 +17,14 @@ struct Command
 
 static const struct Command commands[] =
 {
-	{"gc",            NULL},
-	{"init",          command_init_run},
-	{"sync",          NULL},
+	{"gc",              NULL},
+	{"init",            command_init_run},
+	{"sync",            NULL},
 
-	{"filter-clean",  filter_clean_run},
-	{"filter-smudge", filter_smudge_run},
+	{"filter-clean",    filter_clean_run},
+	{"filter-smudge",   filter_smudge_run},
+
+	{"hook-pre-commit", hooks_pre_commit_run},
 };
 
 static void usage_instructions(void);
