@@ -1,6 +1,7 @@
 #include "init.h"
 #include "../db.h"
 #include "../filters.h"
+#include "../hooks.h"
 #include "../patterns.h"
 #include "../repo.h"
 
@@ -19,6 +20,11 @@ enum Error command_init_run(int argc, char *argv[])
 		if(error == ERROR_NONE)
 		{
 			error = filters_init();
+		}
+
+		if(error == ERROR_NONE)
+		{
+			error = hooks_init();
 		}
 
 		if(error == ERROR_NONE)
