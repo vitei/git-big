@@ -11,14 +11,14 @@ enum Error filter_clean_run(int argc, char *argv[])
 	if(patterns_file_is_present_wc() && pattern_match_wc(filename))
 	{
 		enum Error error = ERROR_NONE;
-		char hash[41];
+		char id[DB_ID_SIZE + 1];
 
-		error = db_file_insert(stdin, hash);
-		hash[40] = '\0';
+		error = db_file_insert(stdin, id);
+		id[DB_ID_SIZE] = '\0';
 
 		if(error == ERROR_NONE)
 		{
-			fwrite(hash, 1, sizeof(hash), stdout);
+			fwrite(id, 1, sizeof(id), stdout);
 		}
 
 		return error;

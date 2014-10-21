@@ -5,9 +5,26 @@
 
 #include "errors.h"
 
+enum
+{
+	DB_VERSION = 1,
+
+	DB_ID_HEADER_SIZE = 7,
+	DB_ID_VERSION_SIZE = sizeof(unsigned int),
+	DB_ID_HASH_SIZE = 40,
+
+	DB_ID_SIZE = DB_ID_HEADER_SIZE
+	           + DB_ID_VERSION_SIZE
+	           + DB_ID_HASH_SIZE,
+};
+
 enum Error db_init(void);
 
 enum Error db_file_query(char *id, FILE *output);
 enum Error db_file_insert(FILE *input, char *id);
 
+void db_id_generate(char *id, unsigned int *version, char *hash);
+enum Error db_id_parse(unsigned int *version, char *hash, char *id);
+
 #endif
+

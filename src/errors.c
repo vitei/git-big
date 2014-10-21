@@ -15,5 +15,8 @@ const char *error_string_table[ERROR_MAX] =
 
 	"Could not find database file, please run git big sync"
 	"Could not insert file into database",
+	"Corrupt database file",
+
+	"Filter input is invalid",
 };
 

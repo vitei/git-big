@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+
 #include "smudge.h"
 #include "../db.h"
 #include "../patterns.h"
@@ -10,15 +11,19 @@ enum Error filter_smudge_run(int argc, char *argv[])
 
 	if(patterns_file_is_present_head() && pattern_match_head(filename))
 	{
-		enum Error error = ERROR_NONE;
-		char hash[41];
+		char id[DB_ID_SIZE] = { '\0' };
+		size_t id_size = 0;
 
-		fread(hash, 1, sizeof(hash), stdin);
-		hash[40] = '\0';
+		id_size = fread(id, 1, sizeof(id), stdin);
 
-		error = db_file_query(hash, stdout);
-
-		return error;
+		if(id_size == DB_ID_SIZE)
+		{
+			return db_file_query(id, stdout);
+		}
+		else
+		{
+			return ERROR_FILTER_SMUDGE_INVALID;
+		}
 	}
 	else
 	{
