@@ -43,7 +43,7 @@ enum Error db_init(void)
 	}
 }
 
-enum Error db_file_query(char *id, FILE *output)
+enum Error db_file_query(FILE *output, char *id)
 {
 	unsigned int version;
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
@@ -79,7 +79,7 @@ enum Error db_file_query(char *id, FILE *output)
 	}
 }
 
-enum Error db_file_insert(FILE *input, char *id)
+enum Error db_file_insert(char *id, FILE *input)
 {
 	char tmp_path[1024] = { '\0' };
 	FILE *file = NULL;

@@ -13,7 +13,7 @@ enum Error filter_clean_run(int argc, char *argv[])
 		enum Error error = ERROR_NONE;
 		char id[DB_ID_SIZE + 1];
 
-		error = db_file_insert(stdin, id);
+		error = db_file_insert(id, stdin);
 		id[DB_ID_SIZE] = '\0';
 
 		if(error == ERROR_NONE)

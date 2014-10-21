@@ -18,7 +18,7 @@ enum Error filter_smudge_run(int argc, char *argv[])
 
 		if(id_size == DB_ID_SIZE)
 		{
-			return db_file_query(id, stdout);
+			return db_file_query(stdout, id);
 		}
 		else
 		{
