@@ -63,6 +63,24 @@ bool patterns_file_is_present_head(void)
 	return patterns_file_blob_head() != NULL;
 }
 
+bool patterns_file_is_modified(void)
+{
+	int error = 0;
+	unsigned int status_flags = 0;
+
+	error = git_status_file(&status_flags, repo_handle, PATTERNS_FILE);
+
+	if(error == 0)
+	{
+		return status_flags != GIT_STATUS_CURRENT;
+	}
+	else
+	{
+		// FIXME: This does not handle errors exhaustively
+		return false;
+	}
+}
+
 bool pattern_match_wc(const char *filename)
 {
 	FILE *patterns_file = NULL;
