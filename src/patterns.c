@@ -117,9 +117,16 @@ static git_blob *patterns_file_blob_index(void)
 	if(!blob)
 	{
 		int error = 0;
+		git_index *idx = NULL;
 		const git_index_entry *entry = NULL;
 		git_oid *oid = NULL;
-		git_index *idx = NULL;
+
+		error = git_repository_index(&idx, repo_handle);
+
+		if(error != 0)
+		{
+			return NULL;
+		}
 
 		entry = git_index_get_bypath(idx, PATTERNS_FILE, 0);
 
