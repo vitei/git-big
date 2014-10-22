@@ -128,7 +128,7 @@ enum Error db_file_insert(char *id, FILE *input)
 	}
 }
 
-void db_id_generate(char *id, unsigned int *version, char *hash)
+void db_id_generate(char *id, unsigned int *version, const char *hash)
 {
 	memcpy(id, ID_HEADER, sizeof(ID_HEADER));
 	id += sizeof(ID_HEADER);
@@ -139,7 +139,7 @@ void db_id_generate(char *id, unsigned int *version, char *hash)
 	memcpy(id, hash, DB_ID_HASH_SIZE);
 }
 
-enum Error db_id_parse(unsigned int *version, char *hash, char *id)
+enum Error db_id_parse(unsigned int *version, char *hash, const char *id)
 {
 	char header[DB_ID_HEADER_SIZE] = { '\0' };
 
@@ -151,10 +151,17 @@ enum Error db_id_parse(unsigned int *version, char *hash, char *id)
 		return ERROR_DB_ID_PARSE_HEADER_INVALID;
 	}
 
-	memcpy(version, id, sizeof(*version)); // FIXME, big / little endian
+	if(version)
+	{
+		memcpy(version, id, sizeof(*version)); // FIXME, big / little endian
+	}
+
 	id += sizeof(*version);
 
-	memcpy(hash, id, DB_ID_HASH_SIZE);
+	if(hash)
+	{
+		memcpy(hash, id, DB_ID_HASH_SIZE);
+	}
 
 	return ERROR_NONE;
 }

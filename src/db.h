@@ -23,8 +23,8 @@ enum Error db_init(void);
 enum Error db_file_query(FILE *output, char *id);
 enum Error db_file_insert(char *id, FILE *input);
 
-void db_id_generate(char *id, unsigned int *version, char *hash);
-enum Error db_id_parse(unsigned int *version, char *hash, char *id);
+void db_id_generate(char *id, unsigned int *version, const char *hash);
+enum Error db_id_parse(unsigned int *version, char *hash, const char *id);
 
 #endif
 
