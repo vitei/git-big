@@ -10,9 +10,9 @@ bool patterns_file_is_present_wc(void);
 bool patterns_file_is_present_index(void);
 bool patterns_file_is_present_head(void);
 
-bool pattern_match_wc(char *filename);
-bool pattern_match_index(char *filename);
-bool pattern_match_head(char *filename);
+bool pattern_match_wc(const char *filename);
+bool pattern_match_index(const char *filename);
+bool pattern_match_head(const char *filename);
 
 #endif
 

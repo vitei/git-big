@@ -19,8 +19,8 @@ static const char *const PATTERNS_FILE = ".gitbig";
 static const char *get_path(void);
 static git_blob *patterns_file_blob_index(void);
 static git_blob *patterns_file_blob_head(void);
-static bool pattern_match_blob(char *filename, git_blob *blob);
-static bool pattern_match(char *filename, GetCharFunction get_char, void *data);
+static bool pattern_match_blob(const char *filename, git_blob *blob);
+static bool pattern_match(const char *filename, GetCharFunction get_char, void *data);
 static unsigned char bgetc(struct BlobReaderData *data);
 
 enum Error patterns_init(void)
@@ -63,7 +63,7 @@ bool patterns_file_is_present_head(void)
 	return patterns_file_blob_head() != NULL;
 }
 
-bool pattern_match_wc(char *filename)
+bool pattern_match_wc(const char *filename)
 {
 	FILE *patterns_file = NULL;
 
@@ -84,13 +84,13 @@ bool pattern_match_wc(char *filename)
 	}
 }
 
-bool pattern_match_index(char *filename)
+bool pattern_match_index(const char *filename)
 {
 	return pattern_match_blob(filename, patterns_file_blob_index());
 }
 
 
-bool pattern_match_head(char *filename)
+bool pattern_match_head(const char *filename)
 {
 	return pattern_match_blob(filename, patterns_file_blob_head());
 }
@@ -215,7 +215,7 @@ static git_blob *patterns_file_blob_head(void)
 	return blob;
 }
 
-static bool pattern_match_blob(char *filename, git_blob *blob)
+static bool pattern_match_blob(const char *filename, git_blob *blob)
 {
 	if(blob)
 	{
@@ -237,7 +237,7 @@ static bool pattern_match_blob(char *filename, git_blob *blob)
 }
 
 
-static bool pattern_match(char *filename, GetCharFunction get_char, void *data)
+static bool pattern_match(const char *filename, GetCharFunction get_char, void *data)
 {
 	FILE *patterns_file = NULL;
 
