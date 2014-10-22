@@ -19,6 +19,7 @@ enum Error filter_clean_run(int argc, char *argv[])
 		if(error == ERROR_NONE)
 		{
 			fwrite(id, 1, sizeof(id), stdout);
+			fflush(stdout);
 		}
 
 		return error;
