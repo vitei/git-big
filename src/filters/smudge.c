@@ -1,6 +1,5 @@
 #include <stdio.h>
 
-
 #include "smudge.h"
 #include "../db.h"
 #include "../patterns.h"
