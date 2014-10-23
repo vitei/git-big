@@ -32,6 +32,9 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 			repo_tree_walk_bigfiles_changed_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
 		}
 
+		// FIXME: if we add rules to ignore files then we should check for
+		// files that would be detected as git-big managed but are not.
+
 		return checks.r;
 	}
 	else
