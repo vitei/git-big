@@ -94,6 +94,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 	if(file)
 	{
+		int error = 0;
 		unsigned int version = DB_VERSION;
 		char path[1024] = { '\0' };
 		char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
@@ -115,17 +116,19 @@ enum Error db_file_insert(char *id, FILE *input)
 			sprintf(&hash[j], "%02x", (unsigned char)buffer[i]);
 		}
 
-		snprintf(path, sizeof(path), "%s%s", get_path(), id);
-		rename(tmp_path, path);
+		snprintf(path, sizeof(path), "%s%s", get_path(), hash);
+		
+		error = rename(tmp_path, path);
 
-		db_id_generate(id, &version, hash);
+		if(error == 0)
+		{
+			db_id_generate(id, &version, hash);
 
-		return ERROR_NONE;
+			return ERROR_NONE;
+		}
 	}
-	else
-	{
-		return ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
-	}
+
+	return ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
 }
 
 void db_id_generate(char *id, unsigned int *version, const char *hash)
