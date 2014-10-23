@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <sys/time.h>
 
 #include "pre_commit.h"
 #include "../patterns.h"
@@ -13,6 +14,7 @@ struct Checks
 
 static void bigfile_filter_check_comitted(const git_index_entry *entry, struct Checks *checks);
 static void bigfile_filter_check_staged(const git_index_entry *entry, struct Checks *checks);
+static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
 {
@@ -42,6 +44,8 @@ static void bigfile_filter_check_comitted(const git_index_entry *entry, struct C
 {
 	if(pattern_match_head(entry->path) && !pattern_match_index(entry->path))
 	{
+		touch_repo_file(entry->path);
+
 		if(!checks->error_comitted)
 		{
 			fprintf(stderr, "The following existing files are handled by git-big and will break with the current .gitbig\n"
@@ -74,5 +78,17 @@ static void bigfile_filter_check_staged(const git_index_entry *entry, struct Che
 
 		checks->r = ERROR_SILENT;
 	}
+}
+
+static void touch_repo_file(const char *filename)
+{
+	char path[1024] = { '\0' };
+	const char *working_dir = git_repository_workdir(repo_handle);
+
+	// FIXME: unsafe for large paths
+	snprintf(path, sizeof(path), "%s%s", working_dir, filename);
+
+	// Touch the file!
+	utimes(path, NULL);
 }
 
