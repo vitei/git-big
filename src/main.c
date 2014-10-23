@@ -73,8 +73,8 @@ int main(int argc, char *argv[])
 					{
 						if(error != ERROR_SILENT)
 						{
-							fprintf(stderr, "git-big encountered an error\n"
-							                "%s\n", error_string_table[error]);
+							fprintf(stderr, "git-big encountered an error:\n"
+							                "   %s\n", error_string_table[error]);
 						}
 
 						return 1;
