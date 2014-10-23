@@ -150,10 +150,13 @@ static git_blob *patterns_file_blob_index(void)
 
 		if(entry == NULL)
 		{
+			git_index_free(idx);
+
 			return NULL;
 		}
 
 		error = git_blob_lookup(&blob, repo_handle, &entry->id);
+		git_index_free(idx);
 
 		if(error != 0)
 		{
@@ -188,6 +191,8 @@ static git_blob *patterns_file_blob_head(void)
 
 		if(oid == 0)
 		{
+			git_reference_free(reference);
+
 			return NULL;
 		}
 
@@ -195,6 +200,8 @@ static git_blob *patterns_file_blob_head(void)
 
 		if(error != 0)
 		{
+			git_reference_free(reference);
+
 			return NULL;
 		}
 
@@ -202,6 +209,9 @@ static git_blob *patterns_file_blob_head(void)
 
 		if(error != 0)
 		{
+			git_commit_free(commit);
+			git_reference_free(reference);
+
 			return NULL;
 		}
 
@@ -209,12 +219,19 @@ static git_blob *patterns_file_blob_head(void)
 
 		if(error != 0)
 		{
+			git_tree_free(tree);
+			git_commit_free(commit);
+			git_reference_free(reference);
+
 			return NULL;
 		}
 
 		if(git_tree_entry_type(entry) != GIT_OBJ_BLOB)
 		{
 			git_tree_entry_free(entry);
+			git_tree_free(tree);
+			git_commit_free(commit);
+			git_reference_free(reference);
 
 			return NULL;
 		}
@@ -224,12 +241,19 @@ static git_blob *patterns_file_blob_head(void)
 		if(oid == 0)
 		{
 			git_tree_entry_free(entry);
+			git_tree_free(tree);
+			git_commit_free(commit);
+			git_reference_free(reference);
 
 			return NULL;
 		}
 
 		error = git_blob_lookup(&blob, repo_handle, oid);
+
 		git_tree_entry_free(entry);
+		git_tree_free(tree);
+		git_commit_free(commit);
+		git_reference_free(reference);
 
 		if(error != 0)
 		{
