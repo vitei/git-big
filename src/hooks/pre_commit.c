@@ -18,6 +18,7 @@ static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
 {
+	enum Error r = ERROR_NONE;
 	bool modified = false;
 	struct Checks checks = { false, false, ERROR_NONE };
 
@@ -26,22 +27,63 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 		return ERROR_NONE;
 	}
 
-	patterns_file_is_modified(&modified);
-
-	if(modified)
+	if(git_repository_is_empty(repo_handle))
 	{
-		repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_comitted, &checks);
-		repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+		r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+
+		if(r != ERROR_NONE)
+		{
+			goto error_repo_tree_walk_bigfiles_all_index_staged_1;
+		}
 	}
 	else
 	{
-		repo_tree_walk_bigfiles_changed_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+		r = patterns_file_is_modified(&modified);
+
+		if(r != ERROR_NONE)
+		{
+			goto error_patterns_file_is_modified;
+		}
+
+		if(modified)
+		{
+			r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_comitted, &checks);
+
+			if(r != ERROR_NONE)
+			{
+				goto error_repo_tree_walk_bigfiles_all_index_comitted;
+			}
+
+			r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+
+			if(r != ERROR_NONE)
+			{
+				goto error_repo_tree_walk_bigfiles_all_index_staged_2;
+			}
+		}
+		else
+		{
+			r = repo_tree_walk_bigfiles_changed_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+
+			if(r != ERROR_NONE)
+			{
+				goto error_repo_tree_walk_bigfiles_changed_index;
+			}
+		}
 	}
 
 	// FIXME: if we add rules to ignore files then we should check for
 	// files that would be detected as git-big managed but are not.
+	
+	r = checks.r;
 
-	return checks.r;
+error_repo_tree_walk_bigfiles_changed_index:
+error_repo_tree_walk_bigfiles_all_index_staged_1:
+error_repo_tree_walk_bigfiles_all_index_staged_2:
+error_repo_tree_walk_bigfiles_all_index_comitted:
+error_patterns_file_is_modified:
+
+	return r;
 }
 
 static void bigfile_filter_check_comitted(const git_index_entry *entry, struct Checks *checks)
