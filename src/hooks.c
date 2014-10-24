@@ -9,14 +9,18 @@ static bool hooks_create(const char *name, const char *repo_dir);
 
 enum Error hooks_init(void)
 {
+	enum Error r = ERROR_NONE;
 	const char *repo_dir = git_repository_path(repo_handle);
 
 	if(!hooks_create("pre-commit", repo_dir))
 	{
-		return ERROR_HOOKS_INIT_COULD_NOT_CREATE_PRE_COMMIT;
+		r = ERROR_HOOKS_INIT_COULD_NOT_CREATE_PRE_COMMIT;
+		goto error_hooks_create;
 	}
 
-	return ERROR_NONE;
+error_hooks_create:
+
+	return r;
 }
 
 static bool hooks_create(const char *name, const char *repo_dir)

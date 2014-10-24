@@ -29,106 +29,114 @@ static const char *get_path(void);
 
 enum Error db_init(void)
 {
+	enum Error r = ERROR_NONE;
 	int error = 0;
 
 	error = mkdir(get_path(), 0777);
 
-	if(error == 0 || errno == EEXIST)
+	if(error != 0 && errno != EEXIST)
 	{
-		return ERROR_NONE;
+		r = ERROR_DB_INIT_COULD_NOT_CREATE_DIRECTORY;
+		goto error_mkdir;
 	}
-	else
-	{
-		return ERROR_DB_INIT_COULD_NOT_CREATE_DIRECTORY;
-	}
+
+error_mkdir:
+
+	return r;
 }
 
 enum Error db_file_query(FILE *output, char *id)
 {
+	enum Error r = ERROR_NONE;
 	unsigned int version;
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
-	char path[1024] = { '\0' };
+	char buffer[1024] = { '\0' };
 	FILE *file = NULL;
+	size_t read_size;
 
 	db_id_parse(&version, hash, id);
 	hash[DB_ID_HASH_SIZE] = '\0';
 
-	snprintf(path, sizeof(path), "%s%s", get_path(), hash);
+	snprintf(buffer, sizeof(buffer), "%s%s", get_path(), hash);
 
-	file = fopen(path, "r");
+	file = fopen(buffer, "r");
 
-	if(file)
+	if(!file)
 	{
-		char buffer[1024];
-		size_t read_size;
-
-		do
-		{
-			read_size = fread(buffer, 1, sizeof(buffer), file);
-			fwrite(buffer, 1, read_size, output);
-		}
-		while(read_size == sizeof(buffer));
-
-		fclose(file);
-
-		return ERROR_NONE;
+		r = ERROR_DB_FILE_QUERY_COULD_NOT_FIND_FILE;
+		goto error_fopen;
 	}
-	else
+
+	do
 	{
-		return ERROR_DB_FILE_QUERY_COULD_NOT_FIND_FILE;
+		read_size = fread(buffer, 1, sizeof(buffer), file);
+		fwrite(buffer, 1, read_size, output);
 	}
+	while(read_size == sizeof(buffer));
+
+	fclose(file);
+
+error_fopen:
+
+	return r;
 }
 
 enum Error db_file_insert(char *id, FILE *input)
 {
+	enum Error r = ERROR_NONE;
 	char tmp_path[1024] = { '\0' };
 	FILE *file = NULL;
 	SHA_CTX ctx;
-	char buffer[1024];
+	char buffer[1024] = { '\0' };
 	size_t size = 0;
+	int error = 0;
+	unsigned int version = DB_VERSION;
+	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
 
 	SHA1_Init(&ctx);
 
 	snprintf(tmp_path, sizeof(tmp_path), "%stmp", get_path());
 	file = fopen(tmp_path, "wb");
 
-	if(file)
+	if(!file)
 	{
-		int error = 0;
-		unsigned int version = DB_VERSION;
-		char path[1024] = { '\0' };
-		char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
-
-		do
-		{
-			size = fread(buffer, 1, sizeof(buffer), input);
-			fwrite(buffer, 1, size, file);
-			SHA1_Update(&ctx, (unsigned char *)buffer, size);
-		}
-		while(size == sizeof(buffer));
-
-		fclose(file);
-
-		SHA1_Final((unsigned char *)buffer, &ctx);
-
-		for(int i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
-		{
-			sprintf(&hash[j], "%02x", (unsigned char)buffer[i]);
-		}
-
-		snprintf(path, sizeof(path), "%s%s", get_path(), hash);
-
-		error = rename(tmp_path, path);
-
-		if(error == 0)
-		{
-			db_id_generate(id, &version, hash);
-
-			return ERROR_NONE;
-		}
+		r = ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
+		goto error_fopen;
 	}
 
-	return ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
+	do
+	{
+		size = fread(buffer, 1, sizeof(buffer), input);
+		fwrite(buffer, 1, size, file);
+		SHA1_Update(&ctx, (unsigned char *)buffer, size);
+	}
+	while(size == sizeof(buffer));
+
+	fclose(file);
+
+	SHA1_Final((unsigned char *)buffer, &ctx);
+
+	for(int i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
+	{
+		sprintf(&hash[j], "%02x", (unsigned char)buffer[i]);
+	}
+
+	snprintf(buffer, sizeof(buffer), "%s%s", get_path(), hash);
+
+	error = rename(tmp_path, buffer);
+
+	if(error != 0)
+	{
+		r = ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
+		goto error_rename;
+	}
+
+	db_id_generate(id, &version, hash);
+
+error_rename:
+error_fopen:
+
+	return r;
 }
 
 void db_id_generate(char *id, unsigned int *version, const char *hash)
@@ -144,6 +152,7 @@ void db_id_generate(char *id, unsigned int *version, const char *hash)
 
 enum Error db_id_parse(unsigned int *version, char *hash, const char *id)
 {
+	enum Error r = ERROR_NONE;
 	char header[DB_ID_HEADER_SIZE] = { '\0' };
 
 	memcpy(header, id, DB_ID_HEADER_SIZE);
@@ -151,7 +160,8 @@ enum Error db_id_parse(unsigned int *version, char *hash, const char *id)
 
 	if(memcmp(header, ID_HEADER, DB_ID_HEADER_SIZE) != 0)
 	{
-		return ERROR_DB_ID_PARSE_HEADER_INVALID;
+		r = ERROR_DB_ID_PARSE_HEADER_INVALID;
+		goto error_header_check;
 	}
 
 	if(version)
@@ -166,7 +176,9 @@ enum Error db_id_parse(unsigned int *version, char *hash, const char *id)
 		memcpy(hash, id, DB_ID_HASH_SIZE);
 	}
 
-	return ERROR_NONE;
+error_header_check:
+
+	return r;
 }
 
 static const char *get_path(void)

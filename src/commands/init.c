@@ -7,39 +7,52 @@
 
 enum Error command_init_run(int argc, char *argv[])
 {
+	enum Error r = ERROR_NONE;
 	int error;
 
 	error = git_repository_config(&repo_config_handle, repo_handle);
 
-	if(error == 0)
+	if(error != 0)
 	{
-		enum Error error = ERROR_NONE;
-
-		error = db_init();
-
-		if(error == ERROR_NONE)
-		{
-			error = filters_init();
-		}
-
-		if(error == ERROR_NONE)
-		{
-			error = hooks_init();
-		}
-
-		if(error == ERROR_NONE)
-		{
-			error = patterns_init();
-		}
-
-		git_config_free(repo_config_handle);
-		repo_config_handle = NULL;
-
-		return error;
+		r = ERROR_INIT_CORRUPT;
+		goto error_repository_config;
 	}
-	else
+
+	error = db_init();
+
+	if(error != ERROR_NONE)
 	{
-		return ERROR_INIT_CORRUPT;
+		goto error_db_init;
 	}
+
+	error = filters_init();
+
+	if(error != ERROR_NONE)
+	{
+		goto error_filters_init;
+	}
+
+	error = hooks_init();
+
+	if(error != ERROR_NONE)
+	{
+		goto error_hooks_init;
+	}
+
+	error = patterns_init();
+
+	if(error != ERROR_NONE)
+	{
+		goto error_patterns_init;
+	}
+
+error_patterns_init:
+error_hooks_init:
+error_filters_init:
+error_db_init:
+	git_config_free(repo_config_handle);
+error_repository_config:
+
+	return r;
 }
 
