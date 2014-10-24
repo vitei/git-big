@@ -67,21 +67,33 @@ bool patterns_file_is_present_head(void)
 	return patterns_file_blob_head() != NULL;
 }
 
-bool patterns_file_is_modified(void)
+enum Error patterns_file_is_modified(bool *is_modified)
 {
-	bool r = false;
+	enum Error r = ERROR_NONE;
 	int error = 0;
 	unsigned int status_flags = 0;
 
 	error = git_status_file(&status_flags, repo_handle, PATTERNS_FILE);
 
-	if(error != 0)
+	if(error != 0 && error != GIT_ENOTFOUND)
 	{
 		// FIXME: This does not handle errors exhaustively
+		r = ERROR_INTERNAL;
 		goto error_git_status_file;
 	}
 
-	r = status_flags != GIT_STATUS_CURRENT;
+	if(error == GIT_ENOTFOUND)
+	{
+		*is_modified = false;
+	}
+	else
+	{
+		*is_modified = status_flags & (  GIT_STATUS_INDEX_NEW
+		                               | GIT_STATUS_INDEX_MODIFIED
+		                               | GIT_STATUS_INDEX_DELETED
+		                               | GIT_STATUS_INDEX_RENAMED
+		                               | GIT_STATUS_INDEX_TYPECHANGE);
+	}
 
 error_git_status_file:
 
@@ -203,7 +215,6 @@ static git_blob *patterns_file_blob_head(void)
 	if(oid == 0)
 	{
 		goto error_git_reference_target;
-
 	}
 
 	error = git_commit_lookup(&commit, repo_handle, oid);

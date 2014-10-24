@@ -10,7 +10,7 @@ bool patterns_file_is_present_wc(void);
 bool patterns_file_is_present_index(void);
 bool patterns_file_is_present_head(void);
 
-bool patterns_file_is_modified(void);
+enum Error patterns_file_is_modified(bool *is_modified);
 
 bool pattern_match_wc(const char *filename);
 bool pattern_match_index(const char *filename);

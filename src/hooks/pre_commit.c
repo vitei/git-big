@@ -18,6 +18,7 @@ static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
 {
+	bool modified = false;
 	struct Checks checks = { false, false, ERROR_NONE };
 
 	if(!patterns_file_is_present_wc() && !patterns_file_is_present_head())
@@ -25,7 +26,9 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 		return ERROR_NONE;
 	}
 
-	if(patterns_file_is_modified())
+	patterns_file_is_modified(&modified);
+
+	if(modified)
 	{
 		repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_comitted, &checks);
 		repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
