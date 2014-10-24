@@ -70,6 +70,8 @@ static void bigfile_filter_check_staged(const git_index_entry *entry, struct Che
 		return;
 	}
 
+	touch_repo_file(entry->path);
+
 	if(!checks->error_staged)
 	{
 		fprintf(stderr, "%s"
