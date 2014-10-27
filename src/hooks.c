@@ -18,6 +18,12 @@ enum Error hooks_init(void)
 		goto error_hooks_create;
 	}
 
+	if(!hooks_create("pre-push", repo_dir))
+	{
+		r = ERROR_HOOKS_INIT_COULD_NOT_CREATE_PRE_COMMIT;
+		goto error_hooks_create;
+	}
+
 error_hooks_create:
 
 	return r;

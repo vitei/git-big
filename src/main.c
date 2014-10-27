@@ -8,6 +8,7 @@
 #include "filters/clean.h"
 #include "filters/smudge.h"
 #include "hooks/pre_commit.h"
+#include "hooks/pre_push.h"
 
 struct Command
 {
@@ -24,6 +25,7 @@ static const struct Command commands[] = {
 	{ "filter-smudge",   filter_smudge_run },
 
 	{ "hook-pre-commit", hooks_pre_commit_run },
+	{ "hook-pre-push",   hooks_pre_push_run },
 };
 
 static void usage_instructions(void);
