@@ -40,6 +40,7 @@ enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, 
 		r = process_idx_entry(entry, function, ptr);
 	}
 
+	git_index_free(idx);
 error_git_repository_index:
 
 	return r;
