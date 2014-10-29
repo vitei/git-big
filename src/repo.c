@@ -150,7 +150,7 @@ static enum Error process_idx_entry(const git_index_entry *entry, RepoWalkCallba
 
 		if(parse_error == ERROR_NONE)
 		{
-			function(entry, ptr);
+			function(entry->path, ptr);
 		}
 	}
 

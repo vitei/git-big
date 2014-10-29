@@ -5,7 +5,7 @@
 
 #include "errors.h"
 
-typedef void (*RepoWalkCallbackFunction)(const git_index_entry *, void *);
+typedef void (*RepoWalkCallbackFunction)(const char *, void *);
 
 enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, void *ptr);
 

@@ -12,8 +12,8 @@ struct Checks
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const git_index_entry *entry, struct Checks *checks);
-static void bigfile_filter_check_staged(const git_index_entry *entry, struct Checks *checks);
+static void bigfile_filter_check_comitted(const char *path, struct Checks *checks);
+static void bigfile_filter_check_staged(const char *path, struct Checks *checks);
 static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
@@ -86,14 +86,14 @@ error_patterns_file_is_modified:
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const git_index_entry *entry, struct Checks *checks)
+static void bigfile_filter_check_comitted(const char *path, struct Checks *checks)
 {
-	if(!pattern_match_head(entry->path) || pattern_match_index(entry->path))
+	if(!pattern_match_head(path) || pattern_match_index(path))
 	{
 		return;
 	}
 
-	touch_repo_file(entry->path);
+	touch_repo_file(path);
 
 	if(!checks->error_comitted)
 	{
@@ -103,19 +103,19 @@ static void bigfile_filter_check_comitted(const git_index_entry *entry, struct C
 		checks->error_comitted = true;
 	}
 
-	fprintf(stderr, "   %s\n", entry->path);
+	fprintf(stderr, "   %s\n", path);
 
 	checks->r = ERROR_SILENT;
 }
 
-static void bigfile_filter_check_staged(const git_index_entry *entry, struct Checks *checks)
+static void bigfile_filter_check_staged(const char *path, struct Checks *checks)
 {
-	if(!pattern_match_wc(entry->path) || pattern_match_index(entry->path))
+	if(!pattern_match_wc(path) || pattern_match_index(path))
 	{
 		return;
 	}
 
-	touch_repo_file(entry->path);
+	touch_repo_file(path);
 
 	if(!checks->error_staged)
 	{
@@ -127,7 +127,7 @@ static void bigfile_filter_check_staged(const git_index_entry *entry, struct Che
 		checks->error_staged = true;
 	}
 
-	fprintf(stderr, "   %s\n", entry->path);
+	fprintf(stderr, "   %s\n", path);
 
 	checks->r = ERROR_SILENT;
 }
