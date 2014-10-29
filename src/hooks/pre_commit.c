@@ -12,8 +12,8 @@ struct Checks
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const char *path, struct Checks *checks);
-static void bigfile_filter_check_staged(const char *path, struct Checks *checks);
+static void bigfile_filter_check_comitted(const char *path, void *ptr);
+static void bigfile_filter_check_staged(const char *path, void *ptr);
 static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
@@ -29,7 +29,7 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 
 	if(git_repository_is_empty(repo_handle))
 	{
-		r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+		r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_staged, &checks);
 
 		if(r != ERROR_NONE)
 		{
@@ -47,14 +47,16 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 
 		if(modified)
 		{
-			r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_comitted, &checks);
+			r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_comitted,
+			                                      &checks);
 
 			if(r != ERROR_NONE)
 			{
 				goto error_repo_tree_walk_bigfiles_all_index_comitted;
 			}
 
-			r = repo_tree_walk_bigfiles_all_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+			r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_staged,
+			                                      &checks);
 
 			if(r != ERROR_NONE)
 			{
@@ -63,7 +65,8 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 		}
 		else
 		{
-			r = repo_tree_walk_bigfiles_changed_index((RepoWalkCallbackFunction)bigfile_filter_check_staged, &checks);
+			r = repo_tree_walk_bigfiles_changed_index(bigfile_filter_check_staged,
+			                                          &checks);
 
 			if(r != ERROR_NONE)
 			{
@@ -86,8 +89,10 @@ error_patterns_file_is_modified:
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const char *path, struct Checks *checks)
+static void bigfile_filter_check_comitted(const char *path, void *ptr)
 {
+	struct Checks *checks = (struct Checks *)ptr;
+
 	if(!pattern_match_head(path) || pattern_match_index(path))
 	{
 		return;
@@ -98,7 +103,7 @@ static void bigfile_filter_check_comitted(const char *path, struct Checks *check
 	if(!checks->error_comitted)
 	{
 		fprintf(stderr, "The following existing files are handled by git-big and will break with the current .gitbig\n"
-						"Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n");
+		                "Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n");
 
 		checks->error_comitted = true;
 	}
@@ -108,8 +113,10 @@ static void bigfile_filter_check_comitted(const char *path, struct Checks *check
 	checks->r = ERROR_SILENT;
 }
 
-static void bigfile_filter_check_staged(const char *path, struct Checks *checks)
+static void bigfile_filter_check_staged(const char *path, void *ptr)
 {
+	struct Checks *checks = (struct Checks *)ptr;
+
 	if(!pattern_match_wc(path) || pattern_match_index(path))
 	{
 		return;
@@ -120,9 +127,9 @@ static void bigfile_filter_check_staged(const char *path, struct Checks *checks)
 	if(!checks->error_staged)
 	{
 		fprintf(stderr, "%s"
-						"The following new files are handled by git-big and will break with the current .gitbig\n"
-						"Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n",
-						checks->error_comitted ? "\n" : "");
+		                "The following new files are handled by git-big and will break with the current .gitbig\n"
+		                "Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n",
+		                checks->error_comitted ? "\n" : "");
 
 		checks->error_staged = true;
 	}

@@ -10,7 +10,7 @@ struct DiffCallbackData
 };
 
 static enum Error process_idx_entry(const git_index_entry *entry, RepoWalkCallbackFunction function, void *ptr);
-static int diff_file_callback(const git_diff_delta *delta, float progress, struct DiffCallbackData *payload);
+static int diff_file_callback(const git_diff_delta *delta, float progress, void *payload);
 
 git_repository *repo_handle = NULL;
 git_config *repo_config_handle = NULL;
@@ -105,7 +105,7 @@ enum Error repo_tree_walk_bigfiles_changed_index(RepoWalkCallbackFunction functi
 		goto error_git_diff_tree_to_index;
 	}
 
-	git_diff_foreach(diff, (git_diff_file_cb)diff_file_callback, NULL, NULL, &diff_callback_data);
+	git_diff_foreach(diff, diff_file_callback, NULL, NULL, &diff_callback_data);
 
 	git_diff_free(diff);
 
@@ -159,12 +159,14 @@ error_git_blob_lookup:
 	return r;
 }
 
-static int diff_file_callback(const git_diff_delta *delta, float progress, struct DiffCallbackData *payload)
+static int diff_file_callback(const git_diff_delta *delta, float progress, void *payload)
 {
-	const git_index_entry *entry = git_index_get_bypath(payload->idx, delta->new_file.path, 0);
+	struct DiffCallbackData *data = (struct DiffCallbackData *)payload;
+	const git_index_entry *entry = git_index_get_bypath(data->idx,
+	                                                    delta->new_file.path, 0);
 
 	// Don't handle this now, we need to go through all files
-	payload->r = process_idx_entry(entry, payload->function, payload->ptr);
+	data->r = process_idx_entry(entry, data->function, data->ptr);
 
 	return 0;
 }
