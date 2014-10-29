@@ -137,9 +137,9 @@ static enum Error process_idx_entry(const git_index_entry *entry, RepoWalkCallba
 		goto error_git_blob_lookup;
 	}
 
-	size = git_blob_rawsize(blob) - 1; // -1 for NULL character
+	size = git_blob_rawsize(blob);
 
-	if(size == DB_ID_SIZE)
+	if(size == DB_ID_SIZE + 1) // +1 for NULL character
 	{
 		const void *data = NULL;
 		enum Error parse_error = ERROR_NONE;
