@@ -33,72 +33,76 @@ static void passthrough(void);
 
 int main(int argc, char *argv[])
 {
+	int r = 0;
+	const char *command;
+	enum Error command_error = ERROR_NONE;
+
 	if(argc < 2)
 	{
 		usage_instructions();
 
-		return 0;
+		goto error_usage;
 	}
-	else
+
+	command = argv[1];
+	argc -= 2;
+	argv = &argv[2];
+
+	for(int i = 0, end = sizeof(commands) / sizeof(commands[0]); i != end; ++i)
 	{
-		const char *command = argv[1];
+		const struct Command *cmp_command = &commands[i];
 
-		argc -= 2;
-		argv = &argv[2];
-
-		for(int i = 0; i < sizeof(commands) / sizeof(commands[0]); ++i)
+		if(i == end)
 		{
-			const struct Command *cmp_command = &commands[i];
-
-			if(strcmp(cmp_command->command, command) == 0)
-			{
-				int error = 0;
-
-				error = git_repository_open_ext(&repo_handle, ".", 0, NULL);
-
-				if(error == 0)
-				{
-					enum Error error = ERROR_NONE;
-
-					error = cmp_command->function(argc, argv);
-
-					git_repository_free(repo_handle);
-					repo_handle = NULL;
-
-					if(error == ERROR_RUN_PASSTHROUGH)
-					{
-						passthrough();
-
-						return 0;
-					}
-					else if(error != ERROR_NONE)
-					{
-						if(error != ERROR_SILENT)
-						{
-							fprintf(stderr, "git-big encountered an error:\n"
-							                "   %s\n", error_string_table[error]);
-						}
-
-						return 1;
-					}
-					else
-					{
-						return 0;
-					}
-				}
-				else
-				{
-					fprintf(stderr, "Invalid git repository\n");
-
-					return 1;
-				}
-			}
+			fprintf(stderr, "Unrecognised command \"%s\"\n", command);
+			goto error_invalid_command;
 		}
+		else if(strcmp(cmp_command->command, command) == 0)
+		{
+			int error = 0;
 
-		fprintf(stderr, "Unrecognised command \"%s\"\n", command);
+			error = git_repository_open_ext(&repo_handle, ".", 0, NULL);
 
-		return 1;
+			if(error != 0)
+			{
+				fprintf(stderr, "Invalid git repository\n");
+				goto error_git_repository_open_ext;
+			}
+
+			command_error = cmp_command->function(argc, argv);
+
+			break;
+		}
 	}
+
+	switch(command_error)
+	{
+		case ERROR_SILENT:
+			r = 1;
+
+		case ERROR_NONE:
+			break;
+
+		case ERROR_RUN_PASSTHROUGH:
+			passthrough();
+			r = 1;
+
+			break;
+
+		default:
+			fprintf(stderr, "git-big encountered an error:\n"
+			                "%s\n", error_string_table[command_error]);
+			r = 1;
+
+			break;
+	}
+
+	git_repository_free(repo_handle);
+error_git_repository_open_ext:
+error_invalid_command:
+error_usage:
+
+	return r;
 }
 
 static void usage_instructions(void)
