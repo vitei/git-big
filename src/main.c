@@ -89,6 +89,16 @@ int main(int argc, char *argv[])
 
 			break;
 
+		case ERROR_INTERNAL:
+			{
+				const git_error *git_error = giterr_last();
+
+				if(git_error)
+				{
+					fprintf(stderr,
+					        "Internal Git Error: %s\n", git_error->message);
+				}
+			}
 		default:
 			fprintf(stderr, "git-big encountered an error:\n"
 			                "%s\n", error_string_table[command_error]);
