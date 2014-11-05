@@ -7,8 +7,8 @@
 
 typedef void (*RepoWalkCallbackFunction)(const char *, void *);
 
+enum Error repo_tree_walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *ptr);
 enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, void *ptr);
-
 enum Error repo_tree_walk_bigfiles_changed_index(RepoWalkCallbackFunction function, void *ptr);
 
 extern git_repository *repo_handle;

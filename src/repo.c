@@ -1,3 +1,7 @@
+#include <assert.h>
+#include <stdbool.h>
+#include <string.h>
+
 #include "db.h"
 #include "repo.h"
 
@@ -14,6 +18,247 @@ static int diff_file_callback(const git_diff_delta *delta, float progress, void 
 
 git_repository *repo_handle = NULL;
 git_config *repo_config_handle = NULL;
+
+
+
+static int testone(const git_diff_delta *delta, float progress, void *payload)
+{
+	fprintf(stderr, "XXX: %s\n", delta->new_file.path);
+	return 0;
+}
+static int walk_cb(const char *root, const git_tree_entry *entry, void *payload)
+{
+	fprintf(stderr, "XXX: %s\n", git_tree_entry_name(entry));
+	return 0;
+}
+
+enum Error repo_tree_walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *ptr)
+{
+	enum Error r = ERROR_NONE;
+	int error = 0;
+	bool from_initial = false;
+	git_oid target;
+	git_commit *current_commit = NULL;
+	git_tree *current_tree = NULL;
+	unsigned int parent_count = 0;
+
+	from_initial = git_oid_iszero(from);
+
+	if(!from_initial)
+	{
+		error = git_merge_base(&target, repo_handle, from, to);
+
+		if(error != 0 && error != GIT_ENOTFOUND)
+		{
+			r = ERROR_INTERNAL;
+			goto error_git_merge_base;
+		}
+	}
+
+	if(from_initial || error == GIT_ENOTFOUND)
+	{
+		memset(&target, 0, sizeof(target));
+		from_initial = true;
+	}
+
+	error = git_commit_lookup(&current_commit, repo_handle, to);
+
+	if(error != 0)
+	{
+		r = ERROR_INTERNAL;
+		goto error_git_commit_lookup;
+	}
+
+	error = git_commit_tree(&current_tree, current_commit);
+
+	if(error != 0)
+	{
+		r = ERROR_INTERNAL;
+		goto error_git_commit_tree_current;
+	}
+
+	do
+	{
+		git_commit *parent_commit = NULL;
+		git_tree *parent_tree = NULL;
+		git_diff *diff = NULL;
+		git_diff_options diff_options = GIT_DIFF_OPTIONS_INIT;
+
+		parent_count = git_commit_parentcount(current_commit);
+
+		switch(parent_count)
+		{
+			case 0:
+				error = git_tree_walk(current_tree, GIT_TREEWALK_PRE, walk_cb,     NULL);
+
+				if(error != 0)
+				{
+					r = ERROR_INTERNAL;
+					goto error_git_tree_walk;
+				}
+
+				assert(from_initial);
+
+				break;
+
+			default:
+				for(unsigned int i = 1; i < parent_count; ++i)
+				{
+					const git_oid *new_to = NULL;
+
+					error = git_commit_parent(&parent_commit, current_commit, i);
+
+					if(error != 0)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_commit_parent;
+					}
+
+					error = git_commit_tree(&parent_tree, parent_commit);
+
+					if(error != 0)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_commit_tree_parent;
+					}
+
+					error = git_diff_tree_to_tree(&diff, repo_handle,
+					                              parent_tree, current_tree,
+					                              &diff_options);
+
+					if(error != 0)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_diff_tree_to_tree;
+					}
+
+					error = git_diff_foreach(diff, testone, NULL, NULL,       NULL);
+
+					if(error != 0)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_diff_foreach;
+					}
+
+					new_to = git_commit_id(parent_commit);
+
+					git_diff_free(diff);
+					git_tree_free(parent_tree);
+					git_commit_free(parent_commit);
+
+					r = repo_tree_walk_bigfiles_for_push(from, new_to, function, ptr);
+
+					if(r != ERROR_NONE)
+					{
+						goto error_git_tree_walk;
+					}
+				}
+
+				if(!from_initial)
+				{
+					error = git_commit_parent(&parent_commit, current_commit, 0);
+
+					if(error != 0)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_commit_parent;
+					}
+
+					to = git_commit_id(parent_commit);
+					error = git_merge_base(&target, repo_handle, from, to); 
+
+					if(error != 0 && error != GIT_ENOTFOUND)
+					{
+						r = ERROR_INTERNAL;
+						goto error_git_merge_base_retarget;
+					}
+
+					if(error == GIT_ENOTFOUND)
+					{
+						memset(&target, 0, sizeof(target));
+						from_initial = true;
+					}
+				}
+
+			case 1:
+				if(!parent_commit)
+				{
+					error = git_commit_parent(&parent_commit, current_commit, 0);
+				}
+
+				if(error != 0)
+				{
+					r = ERROR_INTERNAL;
+					goto error_git_commit_parent;
+				}
+
+				error = git_commit_tree(&parent_tree, parent_commit);
+
+				if(error != 0)
+				{
+					r = ERROR_INTERNAL;
+					goto error_git_commit_tree_parent;
+				}
+
+				error = git_diff_tree_to_tree(&diff, repo_handle,
+				                              parent_tree, current_tree,
+				                              &diff_options);
+
+				if(error != 0)
+				{
+					r = ERROR_INTERNAL;
+					goto error_git_diff_tree_to_tree;
+				}
+
+				error = git_diff_foreach(diff, testone, NULL, NULL,       NULL);
+
+				if(error != 0)
+				{
+					r = ERROR_INTERNAL;
+					goto error_git_diff_foreach;
+				}
+
+				git_diff_free(diff);
+				git_tree_free(current_tree);
+				git_commit_free(current_commit);
+
+				current_commit = parent_commit;
+				current_tree = parent_tree;
+
+				if(git_oid_equal(git_commit_id(current_commit), &target))
+				{
+					goto finished_commit_walk;
+				}
+
+				break;
+		}
+
+		continue;
+
+error_git_diff_foreach:
+		git_diff_free(diff);
+error_git_diff_tree_to_tree:
+		git_tree_free(parent_tree);
+error_git_merge_base_retarget:
+error_git_commit_tree_parent:
+		git_commit_free(parent_commit);
+error_git_commit_parent:
+		goto error_git_tree_walk;
+
+	}
+	while(parent_count);
+
+finished_commit_walk: // FIXME: this goto is a little nasty...
+
+error_git_tree_walk:
+	git_tree_free(current_tree);
+error_git_commit_tree_current:
+	git_commit_free(current_commit);
+error_git_commit_lookup:
+error_git_merge_base:
+
+	return r;
+}
 
 enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, void *ptr)
 {
