@@ -13,7 +13,7 @@ struct DiffCallbackData
 	enum Error r;
 };
 
-static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload);
+static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload, struct DiffCallbackData *diff_callback_data);
 static int diff_file_callback_idx(const git_diff_delta *delta, float progress, void *payload);
 static int diff_file_callback_commit(const git_diff_delta *delta, float progress, void *payload);
 static int walk_callback(const char *root, const git_tree_entry *entry, void *payload);
@@ -26,7 +26,7 @@ enum Error repo_tree_walk_bigfiles_for_push(const git_oid *from, const git_oid *
 {
 	struct DiffCallbackData diff_callback_data = { function, payload, NULL, ERROR_NONE };
 
-	return walk_bigfiles_for_push(from, to, function, payload);
+	return walk_bigfiles_for_push(from, to, function, payload, &diff_callback_data);
 }
 
 enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, void *payload)
@@ -137,7 +137,7 @@ error_git_repository_index:
 	return r;
 }
 
-static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload)
+static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload, struct DiffCallbackData *diff_callback_data)
 {
 	enum Error r = ERROR_NONE;
 	int error = 0;
@@ -253,8 +253,8 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 					git_tree_free(parent_tree);
 					git_commit_free(parent_commit);
 
-					r = repo_tree_walk_bigfiles_for_push(from, new_to,
-					                                     function, payload);
+					r = walk_bigfiles_for_push(from, new_to, function, payload,
+					                           diff_callback_data);
 
 					if(r != ERROR_NONE)
 					{
@@ -376,6 +376,7 @@ static int diff_file_callback_idx(const git_diff_delta *delta, float progress, v
 	const git_index_entry *entry = git_index_get_bypath(idx, delta->new_file.path, 0);
 
 	// Don't handle this now, we need to go through all files
+	// FIXME: this is currently not used at all...
 	data->r = process_entry(entry->path, &entry->id, data->function, data->payload);
 
 	return 0;
