@@ -12,8 +12,8 @@ struct Checks
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const char *path, const char *hash, void *payload);
-static void bigfile_filter_check_staged(const char *path, const char *hash, void *payload);
+static void bigfile_filter_check_comitted(const char *repo_path, const char *db_path, void *payload);
+static void bigfile_filter_check_staged(const char *repo_path, const char *db_path, void *payload);
 static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
@@ -89,16 +89,16 @@ error_patterns_file_is_modified:
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const char *path, const char *hash, void *payload)
+static void bigfile_filter_check_comitted(const char *repo_path, const char *db_path, void *payload)
 {
 	struct Checks *checks = (struct Checks *)payload;
 
-	if(!pattern_match_head(path) || pattern_match_index(path))
+	if(!pattern_match_head(repo_path) || pattern_match_index(repo_path))
 	{
 		return;
 	}
 
-	touch_repo_file(path);
+	touch_repo_file(repo_path);
 
 	if(!checks->error_comitted)
 	{
@@ -108,21 +108,21 @@ static void bigfile_filter_check_comitted(const char *path, const char *hash, vo
 		checks->error_comitted = true;
 	}
 
-	fprintf(stderr, "   %s\n", path);
+	fprintf(stderr, "   %s\n", repo_path);
 
 	checks->r = ERROR_SILENT;
 }
 
-static void bigfile_filter_check_staged(const char *path, const char *hash, void *payload)
+static void bigfile_filter_check_staged(const char *repo_path, const char *db_path, void *payload)
 {
 	struct Checks *checks = (struct Checks *)payload;
 
-	if(!pattern_match_wc(path) || pattern_match_index(path))
+	if(!pattern_match_wc(repo_path) || pattern_match_index(repo_path))
 	{
 		return;
 	}
 
-	touch_repo_file(path);
+	touch_repo_file(repo_path);
 
 	if(!checks->error_staged)
 	{
@@ -134,7 +134,7 @@ static void bigfile_filter_check_staged(const char *path, const char *hash, void
 		checks->error_staged = true;
 	}
 
-	fprintf(stderr, "   %s\n", path);
+	fprintf(stderr, "   %s\n", repo_path);
 
 	checks->r = ERROR_SILENT;
 }
