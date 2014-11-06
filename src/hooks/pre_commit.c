@@ -12,8 +12,8 @@ struct Checks
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const char *repo_path, const char *db_path, void *payload);
-static void bigfile_filter_check_staged(const char *repo_path, const char *db_path, void *payload);
+static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
+static void bigfile_filter_check_staged(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
 static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
@@ -89,7 +89,7 @@ error_patterns_file_is_modified:
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const char *repo_path, const char *db_path, void *payload)
+static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
 	struct Checks *checks = (struct Checks *)payload;
 
@@ -113,7 +113,7 @@ static void bigfile_filter_check_comitted(const char *repo_path, const char *db_
 	checks->r = ERROR_SILENT;
 }
 
-static void bigfile_filter_check_staged(const char *repo_path, const char *db_path, void *payload)
+static void bigfile_filter_check_staged(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
 	struct Checks *checks = (struct Checks *)payload;
 

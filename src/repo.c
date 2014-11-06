@@ -410,19 +410,27 @@ static enum Error process_entry(const char *path, const git_oid *oid, RepoWalkCa
 	if(size == DB_ID_SIZE + 1) // +1 for NULL character
 	{
 		const void *data = NULL;
+		char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
 		enum Error parse_error = ERROR_NONE;
 		char db_path[1024] = { '\0' };
 
 		data = git_blob_rawcontent(blob);
 
-		parse_error = db_file_path(db_path, sizeof(db_path), data);
+		parse_error = db_id_parse(NULL, hash, data);
 
-		if(parse_error == ERROR_NONE)
+		if(parse_error != ERROR_NONE)
 		{
-			function(path, db_path, payload);
+			goto error_db_id_parse;
 		}
+
+		hash[DB_ID_HASH_SIZE] = '\0';
+
+		db_file_path(db_path, sizeof(db_path), data); // FIXME: little bit expensive?
+
+		function(path, hash, db_path, payload);
 	}
 
+error_db_id_parse:
 error_git_blob_lookup:
 
 	return r;

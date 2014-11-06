@@ -5,7 +5,7 @@
 #include "../hooks.h"
 #include "../repo.h"
 
-static void bigfile_perform_push(const char *repo_path, const char *db_path, void *payload);
+static void bigfile_perform_push(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
 
 static const char * const HOOK_NAME = "big-push";
 static char hook_path[1024]; // XXX
@@ -69,8 +69,8 @@ error_fix_your_buffer_sizes:
 	return r;
 }
 
-static void bigfile_perform_push(const char *repo_path, const char *db_path, void *payload)
+static void bigfile_perform_push(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
-	fprintf(stderr, "XXX sss: %s %s\n", repo_path, db_path);
+	fprintf(stderr, "XXX sss: %s %s %s\n", repo_path, db_hash, db_path);
 }
 
