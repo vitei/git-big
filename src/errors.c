@@ -16,6 +16,7 @@ const char *error_string_table[ERROR_MAX] =
 	"Corrupt database file",
 
 	"Could not create pre-commit hook",
+	"Could not push a file managed by git-big",
 
 	"Could not create .gitbig file",
 
