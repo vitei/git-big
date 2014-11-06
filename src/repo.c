@@ -411,14 +411,15 @@ static enum Error process_entry(const char *path, const git_oid *oid, RepoWalkCa
 	{
 		const void *data = NULL;
 		enum Error parse_error = ERROR_NONE;
+		char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
 
 		data = git_blob_rawcontent(blob);
 
-		parse_error = db_id_parse(NULL, NULL, data);
+		parse_error = db_id_parse(NULL, hash, data);
 
 		if(parse_error == ERROR_NONE)
 		{
-			function(path, payload);
+			function(path, hash, payload);
 		}
 	}
 

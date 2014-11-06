@@ -12,8 +12,8 @@ struct Checks
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const char *path, void *ptr);
-static void bigfile_filter_check_staged(const char *path, void *ptr);
+static void bigfile_filter_check_comitted(const char *path, const char *hash, void *payload);
+static void bigfile_filter_check_staged(const char *path, const char *hash, void *payload);
 static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
@@ -89,9 +89,9 @@ error_patterns_file_is_modified:
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const char *path, void *ptr)
+static void bigfile_filter_check_comitted(const char *path, const char *hash, void *payload)
 {
-	struct Checks *checks = (struct Checks *)ptr;
+	struct Checks *checks = (struct Checks *)payload;
 
 	if(!pattern_match_head(path) || pattern_match_index(path))
 	{
@@ -113,9 +113,9 @@ static void bigfile_filter_check_comitted(const char *path, void *ptr)
 	checks->r = ERROR_SILENT;
 }
 
-static void bigfile_filter_check_staged(const char *path, void *ptr)
+static void bigfile_filter_check_staged(const char *path, const char *hash, void *payload)
 {
-	struct Checks *checks = (struct Checks *)ptr;
+	struct Checks *checks = (struct Checks *)payload;
 
 	if(!pattern_match_wc(path) || pattern_match_index(path))
 	{
