@@ -5,17 +5,14 @@
 #include "db.h"
 #include "repo.h"
 
-struct DiffCallbackData
+struct CallbackData
 {
 	RepoWalkCallbackFunction function;
 	void *payload;
-	void *source;
-	enum Error r;
 };
 
-static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload, struct DiffCallbackData *diff_callback_data);
-static int diff_file_callback_idx(const git_diff_delta *delta, float progress, void *payload);
-static int diff_file_callback_commit(const git_diff_delta *delta, float progress, void *payload);
+static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, struct CallbackData *diff_callback_data);
+static int diff_file_callback(const git_diff_delta *delta, float progress, void *payload);
 static int walk_callback(const char *root, const git_tree_entry *entry, void *payload);
 static enum Error process_entry(const char *path, const git_oid *oid, RepoWalkCallbackFunction function, void *payload);
 
@@ -24,9 +21,9 @@ git_config *repo_config_handle = NULL;
 
 enum Error repo_tree_walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload)
 {
-	struct DiffCallbackData diff_callback_data = { function, payload, NULL, ERROR_NONE };
+	struct CallbackData diff_callback_data = { function, payload };
 
-	return walk_bigfiles_for_push(from, to, function, payload, &diff_callback_data);
+	return walk_bigfiles_for_push(from, to, &diff_callback_data);
 }
 
 enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, void *payload)
@@ -64,21 +61,12 @@ enum Error repo_tree_walk_bigfiles_changed_index(RepoWalkCallbackFunction functi
 {
 	enum Error r = ERROR_NONE;
 	int error = 0;
-	struct DiffCallbackData diff_callback_data = { function, payload, NULL, ERROR_NONE };
-	git_index **idx_ptr = (git_index **)(&diff_callback_data.source);
+	struct CallbackData diff_callback_data = { function, payload };
 	git_reference *reference = NULL;
 	git_oid *oid = NULL;
 	git_commit *commit = NULL;
 	git_tree *tree = NULL;
 	git_diff *diff = NULL;
-
-	error = git_repository_index(idx_ptr, repo_handle);
-
-	if(error != 0)
-	{
-		r = ERROR_INTERNAL;
-		goto error_git_repository_index;
-	}
 
 	error = git_repository_head(&reference, repo_handle);
 
@@ -120,7 +108,7 @@ enum Error repo_tree_walk_bigfiles_changed_index(RepoWalkCallbackFunction functi
 		goto error_git_diff_tree_to_index;
 	}
 
-	git_diff_foreach(diff, diff_file_callback_idx, NULL, NULL, &diff_callback_data);
+	git_diff_foreach(diff, diff_file_callback, NULL, NULL, &diff_callback_data);
 
 	git_diff_free(diff);
 
@@ -137,7 +125,7 @@ error_git_repository_index:
 	return r;
 }
 
-static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, RepoWalkCallbackFunction function, void *payload, struct DiffCallbackData *diff_callback_data)
+static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, struct CallbackData *diff_callback_data)
 {
 	enum Error r = ERROR_NONE;
 	int error = 0;
@@ -195,7 +183,7 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 		{
 			case 0:
 				error = git_tree_walk(current_tree, GIT_TREEWALK_PRE,
-				                      walk_callback,     NULL);
+				                      walk_callback, diff_callback_data);
 
 				if(error != 0)
 				{
@@ -238,8 +226,8 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 						goto error_git_diff_tree_to_tree;
 					}
 
-					error = git_diff_foreach(diff, diff_file_callback_commit,
-					                         NULL, NULL,       NULL);
+					error = git_diff_foreach(diff, diff_file_callback,
+					                         NULL, NULL, diff_callback_data);
 
 					if(error != 0)
 					{
@@ -253,8 +241,7 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 					git_tree_free(parent_tree);
 					git_commit_free(parent_commit);
 
-					r = walk_bigfiles_for_push(from, new_to, function, payload,
-					                           diff_callback_data);
+					r = walk_bigfiles_for_push(from, new_to, diff_callback_data);
 
 					if(r != ERROR_NONE)
 					{
@@ -318,8 +305,8 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 					goto error_git_diff_tree_to_tree;
 				}
 
-				error = git_diff_foreach(diff, diff_file_callback_commit,
-				                         NULL, NULL,       NULL);
+				error = git_diff_foreach(diff, diff_file_callback,
+				                         NULL, NULL, diff_callback_data);
 
 				if(error != 0)
 				{
@@ -369,30 +356,15 @@ error_git_merge_base:
 	return r;
 }
 
-static int diff_file_callback_idx(const git_diff_delta *delta, float progress, void *payload)
+static int diff_file_callback(const git_diff_delta *delta, float progress, void *payload)
 {
-	struct DiffCallbackData *data = (struct DiffCallbackData *)payload;
-	git_index *idx = (git_index *)data->source;
-	const git_index_entry *entry = git_index_get_bypath(idx, delta->new_file.path, 0);
+	struct CallbackData *data = (struct CallbackData *)payload;
 
-	// Don't handle this now, we need to go through all files
-	// FIXME: this is currently not used at all...
-	data->r = process_entry(entry->path, &entry->id, data->function, data->payload);
-
-	return 0;
-}
-
-static int diff_file_callback_commit(const git_diff_delta *delta, float progress, void *payload)
-{
-	fprintf(stderr, "XXX: %s\n", delta->new_file.path);
-
-	return 0;
+	return process_entry(delta->new_file.path, &delta->new_file.id, data->function, data->payload);
 }
 
 static int walk_callback(const char *root, const git_tree_entry *entry, void *payload)
 {
-	fprintf(stderr, "XXX: %s\n", git_tree_entry_name(entry));
-
 	return 0;
 }
 
