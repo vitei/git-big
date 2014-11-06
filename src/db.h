@@ -20,6 +20,7 @@ enum
 
 enum Error db_init(void);
 
+enum Error db_file_path(char *path, size_t path_length, const char *id);
 enum Error db_file_query(FILE *output, char *id);
 enum Error db_file_insert(char *id, FILE *input);
 

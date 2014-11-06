@@ -45,6 +45,26 @@ error_mkdir:
 	return r;
 }
 
+enum Error db_file_path(char *path, size_t path_length, const char *id)
+{
+	enum Error r = ERROR_NONE;
+	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
+
+	r = db_id_parse(NULL, hash, id);
+
+	if(r != ERROR_NONE)
+	{
+		goto error_db_id_parse;
+	}
+
+	hash[DB_ID_HASH_SIZE] = '\0';
+	snprintf(path, path_length, "%s%s", get_path(), hash); // FIXME: buffer overflow
+
+error_db_id_parse:
+
+	return r;
+}
+
 enum Error db_file_query(FILE *output, char *id)
 {
 	enum Error r = ERROR_NONE;
@@ -54,7 +74,13 @@ enum Error db_file_query(FILE *output, char *id)
 	FILE *file = NULL;
 	size_t read_size;
 
-	db_id_parse(&version, hash, id);
+	r = db_id_parse(&version, hash, id);
+
+	if(r != ERROR_NONE)
+	{
+		goto error_db_id_parse;
+	}
+
 	hash[DB_ID_HASH_SIZE] = '\0';
 
 	snprintf(buffer, sizeof(buffer), "%s%s", get_path(), hash);
@@ -77,6 +103,7 @@ enum Error db_file_query(FILE *output, char *id)
 	fclose(file);
 
 error_fopen:
+error_db_id_parse:
 
 	return r;
 }
