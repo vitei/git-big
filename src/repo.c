@@ -11,6 +11,12 @@ struct CallbackData
 	void *payload;
 };
 
+struct CallbackDataEx
+{
+	struct CallbackData *c;
+	enum Error r;
+};
+
 static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to, struct CallbackData *diff_callback_data);
 static int diff_file_callback(const git_diff_delta *delta, float progress, void *payload);
 static int walk_callback(const char *root, const git_tree_entry *entry, void *payload);
@@ -182,8 +188,13 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 		switch(parent_count)
 		{
 			case 0:
+			{
+				struct CallbackDataEx walk_callback_data = { diff_callback_data, ERROR_NONE };
+
+				assert(from_initial);
+
 				error = git_tree_walk(current_tree, GIT_TREEWALK_PRE,
-				                      walk_callback, diff_callback_data);
+				                      walk_callback, &walk_callback_data);
 
 				if(error != 0)
 				{
@@ -191,9 +202,14 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 					goto error_git_tree_walk;
 				}
 
-				assert(from_initial);
+				if(walk_callback_data.r != ERROR_NONE)
+				{
+					r = walk_callback_data.r;
+					goto error_git_tree_walk;
+				}
 
 				break;
+			}
 
 			default:
 				for(unsigned int i = 1; i < parent_count; ++i)
@@ -365,7 +381,13 @@ static int diff_file_callback(const git_diff_delta *delta, float progress, void 
 
 static int walk_callback(const char *root, const git_tree_entry *entry, void *payload)
 {
-	return 0;
+	struct CallbackDataEx *data = (struct CallbackDataEx *)payload;
+	const char *filename = git_tree_entry_name(entry);
+	const git_oid *oid = git_tree_entry_id(entry);
+
+	data->r = process_entry(filename, oid, data->c->function, data->c->payload);
+
+	return data->r == ERROR_NONE ? 0 : -1;
 }
 
 static enum Error process_entry(const char *path, const git_oid *oid, RepoWalkCallbackFunction function, void *payload)
