@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+<meta charset="UTF-8">
+<title>git-big</title>
+<link rel="stylesheet" type="text/css" href="css/screen.css" />
+</head>
+
+<body>
+
+<header>
+<h1><a href="http://github.com/vitei/git-big/">git-<span class="big">big</span></a></h1>
+<p>Large file management for <a href="http://git-scm.org/">git</a></p>
+</header>
+
+<article>
+
+<h2>Overview</h2>
+<p>
+A simple plugin for <a href="http://git-scm.org/">git</a> designed to allow it
+to handle large files. File transports are user-defined using the
+<code>big-push</code> and <code>big-pull</code> hooks. Designed to be more
+efficient, lightweight, flexible, and simpler than alternatives such as
+<a href="http://github.com/alebedev/git-media/">git-media</a> and
+<a href="http://git-annex.branchable.com/">git-annex</a>. git-big is written
+entirely in C89 for portability and speed.
+</p>
+
+<p class="banner">
+<a href="http://github.com/vitei/git-big/">Available on GitHub</a><br />
+<a href="https://travis-ci.org/vitei/git-big/"><img src="https://travis-ci.org/vitei/git-big.svg?branch=master" alt="Build status" /></a>
+</p>
+
+<h2>Plugin Installation</h2>
+<p>
+This plugin requires the following to be present on your system:
+</p>
+
+<ul>
+<li><a href="http://cmake.org/">CMake</a></li>
+<li><a href="http://libgit2.github.com/">libgit2</a></li>
+<li><a href="http://www.openssl.org/">openssl</a> (Linux only)</li>
+</ul>
+
+<p>
+To build on a Linux or OSX system simply run:
+<code class="block">git clone https://github.com/vitei/git-big.git
+cd git-big
+mkdir build && cd build
+cmake ..
+sudo cmake --build . --target install</code>
+</p>
+
+<h2>Initialising a repository</h2>
+<p>
+To initialise a repository to use git-big, <code>cd</code> into that repository's
+folder and run:
+<code class="block">git big init</code>
+This creates attributes for use on your binary files and sets up the hooks that
+git-big requires. (git-big makes use of the <code>pre-commit</code> and
+<code>pre-push</code> hooks.)
+</p>
+
+<h2>Managing Files Using git-big</h2>
+<p>
+To manage a binary file using git-big you must add a glob referencing that file
+to your <code>.gitattributes</code> file. This lets you manage both different file types
+using git-big as well as single files. Here is an example <code>.gitattributes</code>
+that will manage some image files using git-big:
+<code class="block">*.bmp binary filter=big
+*.jpg binary filter=big
+*.png binary filter=big</code>
+Pretty simple right? For more details on <code>.gitattributes</code> please read
+<code>man gitattributes</code>.
+</p>
+<p>
+After creating that <code>.gitattributes</code> file, any bitmap, JPEG and PNG
+files will now not be added directly to the git database. Instead, a hash
+representing the image data will be added to the git database and git-big will
+store the raw data under its own database. (This is located at
+<code>.git/big</code>.)
+</p>
+
+<h2>Sharing Files Managed by git-big</h2>
+<p>
+Your binary files are now being managed automatically by git-big, but if you
+perform a <code>git push</code> none of those files will be available to your
+team. Not much use for any real-world project! Fortunately, git-big has two hooks
+that allow you to push and pull big files using any file transport method you
+want. They are called, unsurprisingly, <code>big-push</code> and <code>big-pull</code>
+and are located with the other git hooks inside <code>.git/hooks</code>.
+</p>
+<p>
+The parameters to these two scripts are the same. The first parameter is the
+hash of the file's binary data. This should be used as an ID for this big file.
+The second parameter is a path to the raw data file managed by git-big. This
+file should be copied to wherever you intend to manage your big data on a push,
+and be created/overwritten with the stored data on a pull. Both hooks should
+return 0 on success and any other numerical code on an error. Error output should
+be written to standard error.
+</p>
+<p>
+Here are two example scripts which use SCP to push and pull git-big-stored files.
+Firstly, <code>big-push</code>:
+<code class="block">#!/bin/sh
+
+echo &quot;Pushing $1...&quot; 1>&amp;2
+scp $2 username@host:data_dir/$1</code>
+
+And here is the corresponding <code>big-pull</code>:
+<code class="block">#!/bin/sh
+
+echo &quot;Pulling $1...&quot; 1>&amp;2
+scp username@host:data_dir/$1 $2</code>
+Hopefully you will see how easy it is to swap SCP out for any other program
+to make your own file transports!
+</p>
+
+<h2>Finished!</h2>
+<p>
+You have now seen how to set up a repository to use git-big. Unlike other large
+file management plugins for git, git-big does not require any special commands
+to use, it works seamlessly with your normal git workflow. If you are about to
+commit any changes that will break large files on another user's machine,
+git-big will inform you and stop the commit.
+</p>
+
+<h2>Disclaimer</h2>
+<p>
+git-big is still alpha software. It is in active use at
+<a href="http://vitei.com/">Vitei</a>, however it is almost certain there are
+still bugs and edge-cases that we have not encountered.
+Please file bug reports on the
+<a href="http://github.com/vitei/git-big/issues/">bug tracker</a>, or
+<a href="http://github.com/vitei/git-big/pulls/">submit patches</a> via Github.
+</p>
+
+</article>
+
+<footer>
+git-big is free software created at <a href="http://www.vitei.com/">Vitei</a>
+</footer>
+
+</body>
+
+</html>

@@ -1,0 +1,99 @@
+* {
+	border: none;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-size: 1.2em;
+}
+
+header {
+	background-color: #444444;
+	color: #bbbbbb;
+	font-family: monospace;
+	padding-bottom: 2em;
+	padding-top: 2em;
+	text-align: center;
+}
+
+header a {
+	color: inherit;
+}
+
+header h1 {
+	font-size: 3em;
+	color: #ffffff;
+}
+
+header h1 a {
+	text-decoration: none;
+}
+
+header h1 .big {
+	color: #ff6666;
+	font-size: 1.4em;
+}
+
+header p {
+	font-size: 1.4em;
+}
+
+a {
+	color: #cc4444;
+	text-decoration: underline;
+}
+
+article {
+	font-family: sans-serif;
+	font-weight: 300;
+	margin: 2em auto;
+	width: 80ex;
+}
+
+article h2 {
+	margin-top: 2em;
+}
+
+article ul, p {
+	margin-top: 0.5em;
+}
+
+article p {
+	font-size: 1.1em;
+	line-height: 1.4em;
+}
+
+article p.banner {
+	margin: 1.8em 0 2.2em;
+	font-size: 1.4em;
+	font-weight: bold;
+	text-align: center;
+}
+
+article ul li {
+	margin-left: 4em;
+}
+
+code {
+    background: #eeeeee;
+    font-family: monospace;
+    font-size: 0.9em;
+    line-height: 1.4em;
+    padding: 0.1em;
+    white-space: pre;
+}
+
+code.block {
+    display: block;
+    margin: 0.7em 0;
+    padding: 0.3em 1em;
+    border: 1px dotted #666666;
+}
+
+footer {
+	font-size: 0.6em;
+	margin: 6em 0 1em;
+	text-align: center;
+}
+
