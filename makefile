@@ -29,16 +29,13 @@ LIBRARIES:=git2
 ################################################################################
 
 ifeq ($(OS),Windows_NT)
-    CPP_FLAGS+=-D TARGET_OS_WINDOWS
 else
     UNAME_S:=$(shell uname -s)
 
     ifeq ($(UNAME_S),Linux)
-        CPP_FLAGS+=-D TARGET_OS_LINUX
         LIBRARIES+=crypto
     endif
     ifeq ($(UNAME_S),Darwin)
-        CPP_FLAGS+=-D TARGET_OS_OSX
     endif
 endif
 
