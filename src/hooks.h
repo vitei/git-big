@@ -1,8 +1,7 @@
 #ifndef HOOKS_H
 #define HOOKS_H
 
-#include <stdbool.h>
-
+#include "bool.h"
 #include "errors.h"
 
 enum Error hooks_init(void);

@@ -1,4 +1,3 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>

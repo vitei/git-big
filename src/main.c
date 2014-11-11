@@ -1,7 +1,7 @@
-#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "bool.h"
 #include "errors.h"
 #include "repo.h"
 #include "commands/init.h"

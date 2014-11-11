@@ -3,27 +3,25 @@
 #include <string.h>
 #include <sys/stat.h>
 
-#if defined(TARGET_OS_OSX)
+#if defined(__APPLE__)
 	#include <CommonCrypto/CommonDigest.h>
-
-	#define SHA_CTX CC_SHA1_CTX
-	#define SHA1_Init CC_SHA1_Init
-	#define SHA1_Update CC_SHA1_Update
-	#define SHA1_Final CC_SHA1_Final
-	#define SHA_DIGEST_LENGTH CC_SHA1_DIGEST_LENGTH
 #elif defined(TARGET_OS_LINUX)
 	#include <openssl/sha.h>
-#elif defined(TARGET_OS_WINDOWS)
+#elif defined(_WIN32)
 	#include <windows.h>
 	#include <Wincrypt.h>
-
-	#define SHA_DIGEST_LENGTH 20
 #else
 	#error Unsupported platform
 #endif
 
 #include "db.h"
 #include "repo.h"
+
+#if defined(__APPLE__)
+	#define SHA_DIGEST_LENGTH CC_SHA1_DIGEST_LENGTH
+#elif defined(_WIN32)
+	#define SHA_DIGEST_LENGTH 20
+#endif
 
 static const char * const DB_DIRECTORY = "big";
 static const char ID_HEADER[DB_ID_HEADER_SIZE] = { 'G', 'I', 'T',
@@ -123,18 +121,22 @@ enum Error db_file_insert(char *id, FILE *input)
 	int error = 0;
 	unsigned int version = DB_VERSION;
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
-#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
+#if defined(__APPLE__)
+	CC_SHA1_CTX ctx;
+#elif defined(__posix)
 	SHA_CTX ctx;
-#elif defined(TARGET_OS_WINDOWS)
+#elif defined(_WIN32)
 	BOOL success;
 	HCRYPTPROV crypto_provider = 0;
 	HCRYPTHASH crypto_hash = 0;
 	DWORD hash_length = SHA_DIGEST_LENGTH;
 #endif
 
-#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
+#if defined(__APPLE__)
+	CC_SHA1_Init(&ctx);
+#elif defined(__posix)
 	SHA1_Init(&ctx);
-#elif defined(TARGET_OS_WINDOWS)
+#elif defined(_WIN32)
 	success = CryptAcquireContext(&crypto_provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
 
 	if(!success)
@@ -166,9 +168,11 @@ enum Error db_file_insert(char *id, FILE *input)
 		size = fread(buffer, 1, sizeof(buffer), input);
 		fwrite(buffer, 1, size, file);
 
-#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
+#if defined(__APPLE__)
+		CC_SHA1_Update(&ctx, (unsigned char *)buffer, size);
+#elif defined(__posix)
 		SHA1_Update(&ctx, (unsigned char *)buffer, size);
-#elif defined(TARGET_OS_WINDOWS)
+#elif defined(_WIN32)
 		success = CryptHashData(crypto_hash, buffer, size, 0);
 
 		if(!success)
@@ -182,9 +186,11 @@ enum Error db_file_insert(char *id, FILE *input)
 
 	fclose(file);
 
-#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
+#if defined(__APPLE__)
+	CC_SHA1_Final((unsigned char *)buffer, &ctx);
+#elif defined(__posix)
 	SHA1_Final((unsigned char *)buffer, &ctx);
-#elif defined(TARGET_OS_WINDOWS)
+#elif defined(_WIN32)
 	success = CryptGetHashParam(crypto_hash, HP_HASHVAL, buffer, &hash_length, 0);
 
 	if(!success)
@@ -211,7 +217,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 	db_id_generate(id, &version, hash);
 
-#if defined(TARGET_OS_WINDOWS)
+#if defined(_WIN32)
 error_crypt_get_hash_param:
 error_crypt_hash_data:
     CryptDestroyHash(crypto_hash);

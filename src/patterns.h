@@ -1,7 +1,7 @@
 #ifndef PATTERNS_H
 #define PATTERNS_H
 
-#include <stdbool.h>
+#include "bool.h"
 #include "errors.h"
 
 enum Error patterns_init(void);

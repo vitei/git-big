@@ -1,7 +1,7 @@
 #include <assert.h>
-#include <stdbool.h>
 #include <string.h>
 
+#include "bool.h"
 #include "db.h"
 #include "repo.h"
 
