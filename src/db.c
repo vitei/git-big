@@ -5,7 +5,7 @@
 
 #if defined(__APPLE__)
 	#include <CommonCrypto/CommonDigest.h>
-#elif defined(TARGET_OS_LINUX)
+#elif defined(__posix)
 	#include <openssl/sha.h>
 #elif defined(_WIN32)
 	#include <windows.h>
@@ -121,6 +121,8 @@ enum Error db_file_insert(char *id, FILE *input)
 	int error = 0;
 	unsigned int version = DB_VERSION;
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
+	int i = 0;
+	int j = 0;
 #if defined(__APPLE__)
 	CC_SHA1_CTX ctx;
 #elif defined(__posix)
@@ -200,7 +202,7 @@ enum Error db_file_insert(char *id, FILE *input)
 	}
 #endif
 
-	for(int i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
+	for(i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
 	{
 		sprintf(&hash[j], "%02x", (unsigned char)buffer[i]);
 	}

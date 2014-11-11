@@ -38,6 +38,7 @@ enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, 
 	int error = 0;
 	git_index *idx = NULL;
 	size_t count = 0;
+	size_t i = 0;
 
 	error = git_repository_index(&idx, repo_handle);
 
@@ -49,7 +50,7 @@ enum Error repo_tree_walk_bigfiles_all_index(RepoWalkCallbackFunction function, 
 
 	count = git_index_entrycount(idx);
 
-	for(size_t i = 0; i < count; ++i)
+	for(i = 0; i < count; ++i)
 	{
 		const git_index_entry *entry = git_index_get_byindex(idx, i);
 
@@ -212,7 +213,10 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 			}
 
 			default:
-				for(unsigned int i = 1; i < parent_count; ++i)
+			{
+				unsigned int i = 0;
+
+				for(i = 1; i < parent_count; ++i)
 				{
 					const git_oid *new_to = NULL;
 
@@ -290,6 +294,7 @@ static enum Error walk_bigfiles_for_push(const git_oid *from, const git_oid *to,
 						from_initial = true;
 					}
 				}
+			}
 
 			case 1:
 				if(!parent_commit)

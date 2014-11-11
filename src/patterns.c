@@ -304,6 +304,8 @@ static bool pattern_match(const char *filename, GetCharFunction get_char, void *
 
 		do
 		{
+			char *pattern_char = NULL;
+
 			pattern[0] = '\0';
 
 			do
@@ -312,7 +314,7 @@ static bool pattern_match(const char *filename, GetCharFunction get_char, void *
 			}
 			while(current_char == ' ' || current_char == '\t');
 
-			for(char *pattern_char = pattern; ; ++pattern_char)
+			for(pattern_char = pattern; ; ++pattern_char)
 			{
 				if(   current_char == '#'
 				   || current_char == '\n'

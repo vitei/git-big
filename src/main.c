@@ -36,6 +36,8 @@ int main(int argc, char *argv[])
 	int r = 0;
 	const char *command;
 	enum Error command_error = ERROR_NONE;
+	int i = 0;
+	int end = 0;
 
 	if(argc < 2)
 	{
@@ -48,7 +50,7 @@ int main(int argc, char *argv[])
 	argc -= 2;
 	argv = &argv[2];
 
-	for(int i = 0, end = sizeof(commands) / sizeof(commands[0]); i != end; ++i)
+	for(i = 0, end = sizeof(commands) / sizeof(commands[0]); i != end; ++i)
 	{
 		const struct Command *cmp_command = &commands[i];
 

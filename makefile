@@ -9,7 +9,7 @@ OBJ_DIR:=$(BIG_ROOT_DIR)/obj
 SRC_DIR:=$(BIG_ROOT_DIR)/src
 
 CC:=clang
-CC_FLAGS:=-std=c99
+CC_FLAGS:=-std=c89
 CPP_FLAGS:=
 
 LD:=clang
