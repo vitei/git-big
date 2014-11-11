@@ -1,6 +1,10 @@
 language: c
 
-script: make all
+script:
+    - mkdir build
+    - cd build
+    - cmake ..
+    - cmake --build .
 
 before_script:
     - sudo apt-get update -qq
