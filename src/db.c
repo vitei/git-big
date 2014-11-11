@@ -13,6 +13,11 @@
 	#define SHA_DIGEST_LENGTH CC_SHA1_DIGEST_LENGTH
 #elif defined(TARGET_OS_LINUX)
 	#include <openssl/sha.h>
+#elif defined(TARGET_OS_WINDOWS)
+	#include <windows.h>
+	#include <Wincrypt.h>
+
+	#define SHA_DIGEST_LENGTH 20
 #else
 	#error Unsupported platform
 #endif
@@ -113,14 +118,39 @@ enum Error db_file_insert(char *id, FILE *input)
 	enum Error r = ERROR_NONE;
 	char tmp_path[1024] = { '\0' };
 	FILE *file = NULL;
-	SHA_CTX ctx;
 	char buffer[1024] = { '\0' };
 	size_t size = 0;
 	int error = 0;
 	unsigned int version = DB_VERSION;
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
+#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
+	SHA_CTX ctx;
+#elif defined(TARGET_OS_WINDOWS)
+	BOOL success;
+	HCRYPTPROV crypto_provider = 0;
+	HCRYPTHASH crypto_hash = 0;
+	DWORD hash_length = SHA_DIGEST_LENGTH;
+#endif
 
+#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
 	SHA1_Init(&ctx);
+#elif defined(TARGET_OS_WINDOWS)
+	success = CryptAcquireContext(&crypto_provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
+
+	if(!success)
+	{
+		r = ERROR_INTERNAL;
+		goto error_crypt_acquire_context;
+	}
+
+	success = CryptCreateHash(crypto_provider, CALG_SHA1, 0, 0, &crypto_hash);
+
+	if(!success)
+	{
+		r = ERROR_INTERNAL;
+		goto error_crypt_create_hash;
+	}
+#endif
 
 	snprintf(tmp_path, sizeof(tmp_path), "%stmp", get_path());
 	file = fopen(tmp_path, "wb");
@@ -135,13 +165,34 @@ enum Error db_file_insert(char *id, FILE *input)
 	{
 		size = fread(buffer, 1, sizeof(buffer), input);
 		fwrite(buffer, 1, size, file);
+
+#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
 		SHA1_Update(&ctx, (unsigned char *)buffer, size);
+#elif defined(TARGET_OS_WINDOWS)
+		success = CryptHashData(crypto_hash, buffer, size, 0);
+
+		if(!success)
+		{
+			r = ERROR_INTERNAL;
+			goto error_crypt_hash_data;
+		}
+#endif
 	}
 	while(size == sizeof(buffer));
 
 	fclose(file);
 
+#if defined(TARGET_OS_OSX) || defined(TARGET_OS_LINUX)
 	SHA1_Final((unsigned char *)buffer, &ctx);
+#elif defined(TARGET_OS_WINDOWS)
+	success = CryptGetHashParam(crypto_hash, HP_HASHVAL, buffer, &hash_length, 0);
+
+	if(!success)
+	{
+		r = ERROR_INTERNAL;
+		goto error_crypt_get_hash_param;
+	}
+#endif
 
 	for(int i = 0, j = 0; i < SHA_DIGEST_LENGTH; ++i, j += 2)
 	{
@@ -159,6 +210,15 @@ enum Error db_file_insert(char *id, FILE *input)
 	}
 
 	db_id_generate(id, &version, hash);
+
+#if defined(TARGET_OS_WINDOWS)
+error_crypt_get_hash_param:
+error_crypt_hash_data:
+    CryptDestroyHash(crypto_hash);
+error_crypt_create_hash:
+    CryptReleaseContext(crypto_provider, 0);
+error_crypt_acquire_context:
+#endif
 
 error_rename:
 error_fopen:
