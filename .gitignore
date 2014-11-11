@@ -1,5 +1,3 @@
-# Binaries
-bin/*
+# Build directory
+build
 
-# Intermediate files
-obj/*
