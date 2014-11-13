@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include "hooks.h"
 #include "repo.h"
@@ -31,23 +30,11 @@ error_hooks_create:
 	return r;
 }
 
-bool hook_full_path(char *full_path, const char *name)
+void hook_full_path(char *full_path, const char *name)
 {
-	bool r = true;
 	const char *repo_dir = git_repository_path(repo_handle);
-	int error = 0;
 
 	sprintf(full_path, PATH_PATTERN, repo_dir, name);
-
-	error = access(full_path, F_OK);
-
-	if(error != 0)
-	{
-		*full_path = '\0';
-		r = false;
-	}
-
-	return r;
 }
 
 static bool hooks_create(const char *name, const char *repo_dir)

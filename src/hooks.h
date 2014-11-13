@@ -6,7 +6,7 @@
 
 enum Error hooks_init(void);
 
-bool hook_full_path(char *full_path, const char *name);
+void hook_full_path(char *full_path, const char *name);
 
 #endif
 
