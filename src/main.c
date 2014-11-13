@@ -29,7 +29,6 @@ static const struct Command commands[] = {
 };
 
 static void usage_instructions(void);
-static void passthrough(void);
 
 int main(int argc, char *argv[])
 {
@@ -85,12 +84,6 @@ int main(int argc, char *argv[])
 		case ERROR_NONE:
 			break;
 
-		case ERROR_RUN_PASSTHROUGH:
-			passthrough();
-			r = 1;
-
-			break;
-
 		case ERROR_INTERNAL:
 			{
 				const git_error *git_error = giterr_last();
@@ -124,18 +117,5 @@ static void usage_instructions(void)
 	                "   gc     Clean up file cache\n"
 	                "   init   Initialise git-big for this repository\n"
 	                "   sync   Synchronise big files\n");
-}
-
-static void passthrough(void)
-{
-	char buffer[1024];
-	size_t read_size;
-
-	do
-	{
-		read_size = fread(buffer, 1, sizeof(buffer), stdin);
-		fwrite(buffer, 1, read_size, stdout);
-	}
-	while(read_size == sizeof(buffer));
 }
 

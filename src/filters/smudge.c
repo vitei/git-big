@@ -4,9 +4,10 @@
 #include "smudge.h"
 #include "../db.h"
 #include "../hooks.h"
-#include "../patterns.h"
 
 static const char * const HOOK_NAME = "big-pull";
+
+static void passthrough(void);
 
 enum Error filter_smudge_run(int argc, char *argv[])
 {
@@ -15,18 +16,14 @@ enum Error filter_smudge_run(int argc, char *argv[])
 	char id[DB_ID_SIZE] = { '\0' };
 	size_t id_size = 0;
 
-	if(!patterns_file_is_present_head() || !pattern_match_head(filename))
-	{
-		r = ERROR_RUN_PASSTHROUGH;
-		goto error_passthrough;
-	}
-
 	id_size = fread(id, 1, sizeof(id), stdin);
 
 	if(id_size != DB_ID_SIZE)
 	{
-		r = ERROR_FILTER_SMUDGE_INVALID;
-		goto error_id_read;
+		/* Passthrough... */
+		fwrite(id, 1, id_size, stdout);
+
+		goto error_passthrough;
 	}
 
 	r = db_file_query(stdout, id);
@@ -66,12 +63,35 @@ enum Error filter_smudge_run(int argc, char *argv[])
 		r = db_file_query(stdout, id);
 	}
 
+	if(r == ERROR_DB_ID_PARSE_HEADER_INVALID)
+	{
+		/* Passthrough... */
+		fwrite(id, 1, id_size, stdout);
+		passthrough();
+
+		r = ERROR_NONE;
+		goto error_passthrough;
+	}
+
 error_system:
-error_id_read:
 error_passthrough:
 
 skip_pull:
 
 	return r;
+
+}
+
+static void passthrough(void)
+{
+	char buffer[1024];
+	size_t read_size;
+
+	do
+	{
+		read_size = fread(buffer, 1, sizeof(buffer), stdin);
+		fwrite(buffer, 1, read_size, stdout);
+	}
+	while(read_size == sizeof(buffer));
 }
 

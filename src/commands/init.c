@@ -2,7 +2,6 @@
 #include "../db.h"
 #include "../filters.h"
 #include "../hooks.h"
-#include "../patterns.h"
 #include "../repo.h"
 
 enum Error command_init_run(int argc, char *argv[])
@@ -39,14 +38,6 @@ enum Error command_init_run(int argc, char *argv[])
 		goto error_hooks_init;
 	}
 
-	error = patterns_init();
-
-	if(error != ERROR_NONE)
-	{
-		goto error_patterns_init;
-	}
-
-error_patterns_init:
 error_hooks_init:
 error_filters_init:
 error_db_init:

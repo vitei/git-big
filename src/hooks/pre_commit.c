@@ -2,10 +2,9 @@
 #include <sys/time.h>
 
 #include "pre_commit.h"
-#include "../patterns.h"
 #include "../repo.h"
 
-struct Checks
+/*struct Checks
 {
 	bool error_comitted;
 	bool error_staged;
@@ -14,12 +13,12 @@ struct Checks
 
 static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
 static void bigfile_filter_check_staged(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
-static void touch_repo_file(const char *filename);
+static void touch_repo_file(const char *filename);*/
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
 {
 	enum Error r = ERROR_NONE;
-	bool modified = false;
+	/*bool modified = false;
 	struct Checks checks = { false, false, ERROR_NONE };
 
 	if(!patterns_file_is_present_wc() && !patterns_file_is_present_head())
@@ -84,12 +83,12 @@ error_repo_tree_walk_bigfiles_changed_index:
 error_repo_tree_walk_bigfiles_all_index_staged_1:
 error_repo_tree_walk_bigfiles_all_index_staged_2:
 error_repo_tree_walk_bigfiles_all_index_comitted:
-error_patterns_file_is_modified:
+error_patterns_file_is_modified:*/
 
 	return r;
 }
 
-static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
+/*static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
 	struct Checks *checks = (struct Checks *)payload;
 
@@ -149,5 +148,5 @@ static void touch_repo_file(const char *filename)
 
 	// Touch the file!
 	utimes(path, NULL);
-}
+}*/
 
