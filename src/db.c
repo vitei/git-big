@@ -5,7 +5,7 @@
 
 #if defined(__APPLE__)
 	#include <CommonCrypto/CommonDigest.h>
-#elif defined(__posix)
+#elif defined(__linux)
 	#include <openssl/sha.h>
 #elif defined(_WIN32)
 	#include <windows.h>
@@ -123,9 +123,10 @@ enum Error db_file_insert(char *id, FILE *input)
 	char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
 	int i = 0;
 	int j = 0;
+
 #if defined(__APPLE__)
 	CC_SHA1_CTX ctx;
-#elif defined(__posix)
+#elif defined(__linux)
 	SHA_CTX ctx;
 #elif defined(_WIN32)
 	BOOL success;
@@ -136,7 +137,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 #if defined(__APPLE__)
 	CC_SHA1_Init(&ctx);
-#elif defined(__posix)
+#elif defined(__linux)
 	SHA1_Init(&ctx);
 #elif defined(_WIN32)
 	success = CryptAcquireContext(&crypto_provider, NULL, NULL, PROV_RSA_FULL, CRYPT_VERIFYCONTEXT);
@@ -172,7 +173,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 #if defined(__APPLE__)
 		CC_SHA1_Update(&ctx, (unsigned char *)buffer, size);
-#elif defined(__posix)
+#elif defined(__linux)
 		SHA1_Update(&ctx, (unsigned char *)buffer, size);
 #elif defined(_WIN32)
 		success = CryptHashData(crypto_hash, buffer, size, 0);
@@ -190,7 +191,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 #if defined(__APPLE__)
 	CC_SHA1_Final((unsigned char *)buffer, &ctx);
-#elif defined(__posix)
+#elif defined(__linux)
 	SHA1_Final((unsigned char *)buffer, &ctx);
 #elif defined(_WIN32)
 	success = CryptGetHashParam(crypto_hash, HP_HASHVAL, buffer, &hash_length, 0);
