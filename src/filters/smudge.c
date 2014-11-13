@@ -1,9 +1,8 @@
 #include <stdio.h>
-#include <stdlib.h>
 
 #include "smudge.h"
 #include "../db.h"
-#include "../hooks.h"
+#include "../hooks/big_pull.h"
 
 static const char * const HOOK_NAME = "big-pull";
 
@@ -30,16 +29,13 @@ enum Error filter_smudge_run(int argc, char *argv[])
 
 	if(r == ERROR_DB_FILE_QUERY_COULD_NOT_FIND_FILE)
 	{
-		bool exists = false;
 		char hook_path[1024]; // XXX
 		char hash[DB_ID_HASH_SIZE + 1] = { '\0' }; // +1 for null
 		char db_path[1024];
 		char tmp[1024];
-		int error = 0;
+		enum Error hook_error = ERROR_NONE;
 
-		exists = hook_full_path(hook_path, HOOK_NAME);
-
-		if(!exists)
+		if(!hook_big_pull_exists())
 		{
 			goto skip_pull;
 		}
@@ -49,12 +45,9 @@ enum Error filter_smudge_run(int argc, char *argv[])
 
 		db_file_path(db_path, sizeof(db_path), id);
 
-		// FIXME: unsafe for large paths
-		snprintf(tmp, sizeof(tmp), "%s %s %s", hook_path, hash, db_path);
+		hook_error = hook_big_pull_run(hash, db_path);
 
-		error = system(tmp);
-
-		if(error != 0)
+		if(hook_error != ERROR_NONE)
 		{
 			r = ERROR_INTERNAL;
 			goto error_system;

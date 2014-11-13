@@ -1,14 +1,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "big_push.h"
 #include "pre_push.h"
-#include "../hooks.h"
 #include "../repo.h"
 
 static void bigfile_perform_push(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
-
-static const char * const HOOK_NAME = "big-push";
-static char hook_path[1024]; // XXX
 
 enum Error hooks_pre_push_run(int argc, char *argv[])
 {
@@ -25,7 +22,7 @@ enum Error hooks_pre_push_run(int argc, char *argv[])
 	git_oid remote_oid;
 	enum Error bigfile_push_r = ERROR_NONE;
 
-	if(!hook_full_path(hook_path, HOOK_NAME))
+	if(!hook_big_push_exists())
 	{
 		return ERROR_NONE;
 	}
@@ -75,15 +72,12 @@ error_fix_your_buffer_sizes:
 static void bigfile_perform_push(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
 	enum Error *r = (enum Error *)payload;
-	int error = 0;
+	enum Error hook_error = ERROR_NONE;
 	char tmp[1024];
 
-	// FIXME: unsafe for large paths
-	snprintf(tmp, sizeof(tmp), "%s %s %s", hook_path, db_hash, db_path);
+	hook_error = hook_big_push_run(db_hash, db_path);
 
-	error = system(tmp);
-
-	if(error != 0)
+	if(hook_error != ERROR_NONE)
 	{
 		*r = ERROR_HOOKS_PRE_PUSH_COULD_NOT_PUSH_FILE;
 	}
