@@ -67,6 +67,8 @@ int main(int argc, char *argv[])
 			if(error != 0)
 			{
 				fprintf(stderr, "Invalid git repository\n");
+				r = 1;
+
 				goto error_git_repository_open_ext;
 			}
 
