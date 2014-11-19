@@ -44,3 +44,11 @@ endif()
 # Install options
 install(TARGETS git-big DESTINATION bin)
 
+#-------------------------------------------------------------------------------
+# Tests
+#-------------------------------------------------------------------------------
+
+enable_testing()
+
+add_test(integration_tests ${PROJECT_SOURCE_DIR}/tests/ctf/ctf .)
+
