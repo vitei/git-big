@@ -3,9 +3,10 @@
 #include <string.h>
 
 #include "attributes.h"
+#include "attributes_parser.h"
 #include "repo.h"
 
-static enum Error match_index(bool *match, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *test);
+static enum Error match_index(bool *is_match, git_index *idx, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *match);
 
 enum Error attributes_get_status(enum AttributesStatus *status)
 {
@@ -41,14 +42,23 @@ error_git_status_list_new:
 	return r;
 }
 
-enum Error attributes_match_index(bool *match, const char *repo_path, const char *attribute, const char *test)
+enum Error attributes_match_index(bool *is_match, const char *repo_path, const char *attribute, const char *match)
 {
 	enum Error r = ERROR_NONE;
+	int error = 0;
+	git_index *idx = NULL;
 	char path[1024] = { '\0' };
 	char *current_path = NULL;
 
 	// No match by default
-	*match = false;
+	*is_match = false;
+
+	error = git_repository_index(&idx, repo_handle);
+
+	if(error != 0)
+	{
+		goto error_git_repository_index;
+	}
 
 	// Make a copy of the path that we can mutate
 	strcpy(path, repo_path);
@@ -65,23 +75,23 @@ enum Error attributes_match_index(bool *match, const char *repo_path, const char
 		// Get the path to the file in this subdirectory (+1 for slash)
 		subdir_path = &repo_path[strlen(current_path) + 1];
 
-		r = match_index(match, attributes_path, subdir_path, attribute, test);
+		r = match_index(is_match, idx, attributes_path, subdir_path, attribute, match);
 
 		if(r != ERROR_NONE)
 		{
 			goto error_match_index;
 		}
 
-		if(*match)
+		if(*is_match)
 		{
 			break;
 		}
 	}
 
 	// Construct the root .gitattributes manually
-	if(!*match)
+	if(!*is_match)
 	{
-		r = match_index(match, ".gitattributes", repo_path, attribute, test);
+		r = match_index(is_match, idx, ".gitattributes", repo_path, attribute, match);
 
 		if(r != ERROR_NONE)
 		{
@@ -90,15 +100,44 @@ enum Error attributes_match_index(bool *match, const char *repo_path, const char
 	}
 
 error_match_index:
+	git_index_free(idx);
+error_git_repository_index:
 
 	return r;
 }
 
-static enum Error match_index(bool *match, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *test)
+static enum Error match_index(bool *is_match, git_index *idx, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *match)
 {
 	enum Error r = ERROR_NONE;
+	int error = 0;
+	const git_index_entry *entry = NULL;
+	git_blob *blob = NULL;
+	const void *data = NULL;
+	git_off_t data_size = 0;
 
-	//printf("%s    %s\n", repo_attributes_path, repo_path);
+	entry = git_index_get_bypath(idx, repo_attributes_path, 0);
+
+	if(entry == NULL)
+	{
+		goto skip_no_attributes;
+	}
+
+	error = git_blob_lookup(&blob, repo_handle, &entry->id);
+
+	if(error != 0)
+	{
+		r = ERROR_INTERNAL;
+		goto error_git_blob_lookup;
+	}
+
+	data = git_blob_rawcontent(blob);
+	data_size = git_blob_rawsize(blob);
+
+	*is_match = attributes_parser_match(data, data_size, attribute, match);
+
+	git_blob_free(blob);
+error_git_blob_lookup:
+skip_no_attributes:
 
 	return r;
 }

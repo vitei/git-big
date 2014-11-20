@@ -12,7 +12,7 @@ enum AttributesStatus
 
 enum Error attributes_get_status(enum AttributesStatus *status);
 
-enum Error attributes_match_index(bool *match, const char *repo_path, const char *attribute, const char *test);
+enum Error attributes_match_index(bool *is_match, const char *repo_path, const char *attribute, const char *match);
 
 #endif
 
