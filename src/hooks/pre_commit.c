@@ -2,140 +2,108 @@
 #include <sys/time.h>
 
 #include "pre_commit.h"
+#include "../attributes.h"
+#include "../bool.h"
 #include "../repo.h"
 
-/*struct Checks
+struct AttributeCheckPayload
 {
-	bool error_comitted;
-	bool error_staged;
+	bool error_shown;
 	enum Error r;
 };
 
-static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
-static void bigfile_filter_check_staged(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
-static void touch_repo_file(const char *filename);*/
+static void attribute_check(const char *repo_path, const char *db_hash, const char *db_path, void *payload);
+static void touch_repo_file(const char *filename);
 
 enum Error hooks_pre_commit_run(int argc, char *argv[])
 {
 	enum Error r = ERROR_NONE;
-	/*bool modified = false;
-	struct Checks checks = { false, false, ERROR_NONE };
+	enum AttributesStatus status = ATTRIBUTES_STATUS_UNMODIFIED;
+	struct AttributeCheckPayload payload = { false, ERROR_NONE };
 
-	if(!patterns_file_is_present_wc() && !patterns_file_is_present_head())
+	r = attributes_get_status(&status);
+
+	if(r != ERROR_NONE)
 	{
-		return ERROR_NONE;
+		goto error_attributes_get_status;
 	}
 
-	if(git_repository_is_empty(repo_handle))
+	switch(status)
 	{
-		r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_staged, &checks);
-
-		if(r != ERROR_NONE)
-		{
-			goto error_repo_tree_walk_bigfiles_all_index_staged_1;
-		}
-	}
-	else
-	{
-		r = patterns_file_is_modified(&modified);
-
-		if(r != ERROR_NONE)
-		{
-			goto error_patterns_file_is_modified;
-		}
-
-		if(modified)
-		{
-			r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_comitted,
-			                                      &checks);
-
-			if(r != ERROR_NONE)
-			{
-				goto error_repo_tree_walk_bigfiles_all_index_comitted;
-			}
-
-			r = repo_tree_walk_bigfiles_all_index(bigfile_filter_check_staged,
-			                                      &checks);
-
-			if(r != ERROR_NONE)
-			{
-				goto error_repo_tree_walk_bigfiles_all_index_staged_2;
-			}
-		}
-		else
-		{
-			r = repo_tree_walk_bigfiles_changed_index(bigfile_filter_check_staged,
-			                                          &checks);
+		 case ATTRIBUTES_STATUS_UNMODIFIED:
+			/* Only check staged files */
+			r = repo_tree_walk_bigfiles_changed_index(attribute_check, &payload);
 
 			if(r != ERROR_NONE)
 			{
 				goto error_repo_tree_walk_bigfiles_changed_index;
 			}
-		}
+
+			break;
+
+		case ATTRIBUTES_STATUS_MODIFIED:
+			/* All files need to be checked */
+			r = repo_tree_walk_bigfiles_all_index(attribute_check, &payload);
+
+			if(r != ERROR_NONE)
+			{
+				goto error_repo_tree_walk_bigfiles_all_index;
+			}
+
+			break;
 	}
 
-	// FIXME: if we add rules to ignore files then we should check for
-	// files that would be detected as git-big managed but are not.
-	
-	r = checks.r;
+	if(payload.r != ERROR_NONE)
+	{
+		r = ERROR_NONE;
+	}
+	else if(payload.error_shown)
+	{
+		r = ERROR_SILENT;
+	}
 
+error_repo_tree_walk_bigfiles_all_index:
 error_repo_tree_walk_bigfiles_changed_index:
-error_repo_tree_walk_bigfiles_all_index_staged_1:
-error_repo_tree_walk_bigfiles_all_index_staged_2:
-error_repo_tree_walk_bigfiles_all_index_comitted:
-error_patterns_file_is_modified:*/
+error_attributes_get_status:
 
 	return r;
 }
 
-/*static void bigfile_filter_check_comitted(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
+static void attribute_check(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
 {
-	struct Checks *checks = (struct Checks *)payload;
+	enum Error r = ERROR_NONE;
+	struct AttributeCheckPayload *check_payload = (struct AttributeCheckPayload *)payload;
+	bool match = false;
 
-	if(!pattern_match_head(repo_path) || pattern_match_index(repo_path))
+	r = attributes_match_index(&match, repo_path, "filter", "big");
+
+	if(r != ERROR_NONE)
 	{
-		return;
+		goto error_attributes_match_index;
 	}
 
-	touch_repo_file(repo_path);
-
-	if(!checks->error_comitted)
+	if(!match)
 	{
-		fprintf(stderr, "The following existing files are handled by git-big and will break with the current .gitbig\n"
-		                "Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n");
+		touch_repo_file(repo_path);
 
-		checks->error_comitted = true;
+		if(!check_payload->error_shown)
+		{
+			fprintf(stderr, "The following files are handled by git-big and will break with the current .gitattributes\n"
+			                "Please add valid rules to .gitattributes and/or re-add the files to git\n");
+
+			check_payload->error_shown = true;
+		}
+
+		fprintf(stderr, "   %s\n", repo_path);
 	}
 
-	fprintf(stderr, "   %s\n", repo_path);
+error_attributes_match_index:
 
-	checks->r = ERROR_SILENT;
-}
-
-static void bigfile_filter_check_staged(const char *repo_path, const char *db_hash, const char *db_path, void *payload)
-{
-	struct Checks *checks = (struct Checks *)payload;
-
-	if(!pattern_match_wc(repo_path) || pattern_match_index(repo_path))
+	/* FIXME: would like to make this nicer sometime... */
+	if(r != ERROR_NONE)
 	{
-		return;
+		check_payload->r = r;
 	}
-
-	touch_repo_file(repo_path);
-
-	if(!checks->error_staged)
-	{
-		fprintf(stderr, "%s"
-		                "The following new files are handled by git-big and will break with the current .gitbig\n"
-		                "Please add valid rules to .gitbig or remove any unstaged rules and re-add the files to git\n",
-		                checks->error_comitted ? "\n" : "");
-
-		checks->error_staged = true;
-	}
-
-	fprintf(stderr, "   %s\n", repo_path);
-
-	checks->r = ERROR_SILENT;
 }
 
 static void touch_repo_file(const char *filename)
@@ -148,5 +116,5 @@ static void touch_repo_file(const char *filename)
 
 	// Touch the file!
 	utimes(path, NULL);
-}*/
+}
 
