@@ -17,9 +17,9 @@ struct Command
 };
 
 static const struct Command commands[] = {
-	{ "gc",              NULL },
+	//{ "gc",              NULL },
 	{ "init",            command_init_run },
-	{ "sync",            NULL },
+	//{ "sync",            NULL },
 
 	{ "filter-clean",    filter_clean_run },
 	{ "filter-smudge",   filter_smudge_run },
@@ -116,8 +116,8 @@ static void usage_instructions(void)
 {
 	fprintf(stdout, "usage: git big <command> [<args>]\n\n"
 	                "The following are git-big commands:\n"
-	                "   gc     Clean up file cache\n"
+	                /*"   gc     Clean up file cache\n"*/
 	                "   init   Initialise git-big for this repository\n"
-	                "   sync   Synchronise big files\n");
+	                /*"   sync   Synchronise big files\n"*/);
 }
 
