@@ -35,13 +35,15 @@ entirely in C89 for portability and speed.
 
 <h2>Plugin Installation</h2>
 <p>
-This plugin requires the following to be present on your system:
+The plugin is self-contained inside a single executable, however building this
+plugin requires the following to be present on your system:
 </p>
 
 <ul>
 <li><a href="http://cmake.org/">CMake</a></li>
 <li><a href="http://libgit2.github.com/">libgit2</a></li>
 <li><a href="http://www.openssl.org/">openssl</a> (Linux only)</li>
+<li>(Optionally <a href="http://www.colm.net/open-source/ragel/">Ragel</a>)</li>
 </ul>
 
 <p>
@@ -74,6 +76,13 @@ that will manage some image files using git-big:
 *.png binary filter=big</code>
 Pretty simple right? For more details on <code>.gitattributes</code> please read
 <code>man gitattributes</code>.
+</p>
+<p>
+<em>Important: All big files must have their filter property set by a checked-in
+<code>.gitattributes</code> file. (I.e. not in the global
+<code>.gitattributes</code> or <code>.git/attributes</code> files.) This allows
+git-big to ensure all users of that repository can access files managed with
+git-big.</em>
 </p>
 <p>
 After creating that <code>.gitattributes</code> file, any bitmap, JPEG and PNG
@@ -116,6 +125,18 @@ echo &quot;Pulling $1...&quot; 1>&amp;2
 scp username@host:data_dir/$1 $2</code>
 Hopefully you will see how easy it is to swap SCP out for any other program
 to make your own file transports!
+</p>
+
+<h2>Cloning a repository</h2>
+<p>
+Cloning a repository takes a little more work. Firstly you must clone the
+repository <em>without</em> checking the files out. Then you can initialise
+git-big and create the big-pull hook. Finally, you can run a
+checkout to get all the repository's files!
+<code class="block">git clone --no-checkout repo_uri repo && cd repo
+git big init
+echo "big-pull hook code" > .git/hooks/big-pull
+git checkout master</code>
 </p>
 
 <h2>Finished!</h2>
