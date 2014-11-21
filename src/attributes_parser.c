@@ -51,6 +51,8 @@ tr9:
 tr13:
 #line 37 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 	{
+			bool do_return = false;
+			bool r = false;
 			char *name_end = value_start - 1;
 			char tmp = *name_end;
 
@@ -59,25 +61,32 @@ tr13:
 
 			if(strcmp(attribute, name_start) == 0)
 			{
+				do_return = true;
+
 				if(strcmp(match, value_start) == 0)
 				{
-					return true;
+					r = true;
 				}
 				else
 				{
-					return false;
+					r = false;
 				}
 			}
 
 			*name_end = tmp;
 			*p = (*p);
+
+			if(do_return)
+			{
+				return r;
+			}
 		}
 	goto st3;
 st3:
 	if ( ++p == pe )
 		goto _test_eof3;
 case 3:
-#line 81 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 90 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto st0;
 		case 10: goto st3;
@@ -108,6 +117,8 @@ tr8:
 tr12:
 #line 37 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 	{
+			bool do_return = false;
+			bool r = false;
 			char *name_end = value_start - 1;
 			char tmp = *name_end;
 
@@ -116,25 +127,32 @@ tr12:
 
 			if(strcmp(attribute, name_start) == 0)
 			{
+				do_return = true;
+
 				if(strcmp(match, value_start) == 0)
 				{
-					return true;
+					r = true;
 				}
 				else
 				{
-					return false;
+					r = false;
 				}
 			}
 
 			*name_end = tmp;
 			*p = (*p);
+
+			if(do_return)
+			{
+				return r;
+			}
 		}
 	goto st1;
 st1:
 	if ( ++p == pe )
 		goto _test_eof1;
 case 1:
-#line 138 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 156 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 32: goto st0;
 		case 61: goto st0;
@@ -152,7 +170,7 @@ st5:
 	if ( ++p == pe )
 		goto _test_eof5;
 case 5:
-#line 156 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 174 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto tr8;
 		case 10: goto tr9;
@@ -179,7 +197,7 @@ st6:
 	if ( ++p == pe )
 		goto _test_eof6;
 case 6:
-#line 183 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 201 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto tr12;
 		case 10: goto tr13;
@@ -212,6 +230,8 @@ tr18:
 tr22:
 #line 37 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 	{
+			bool do_return = false;
+			bool r = false;
 			char *name_end = value_start - 1;
 			char tmp = *name_end;
 
@@ -220,25 +240,32 @@ tr22:
 
 			if(strcmp(attribute, name_start) == 0)
 			{
+				do_return = true;
+
 				if(strcmp(match, value_start) == 0)
 				{
-					return true;
+					r = true;
 				}
 				else
 				{
-					return false;
+					r = false;
 				}
 			}
 
 			*name_end = tmp;
 			*p = (*p);
+
+			if(do_return)
+			{
+				return r;
+			}
 		}
 	goto st8;
 st8:
 	if ( ++p == pe )
 		goto _test_eof8;
 case 8:
-#line 242 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 269 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto st12;
 		case 10: goto st3;
@@ -256,7 +283,7 @@ st9:
 	if ( ++p == pe )
 		goto _test_eof9;
 case 9:
-#line 260 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 287 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto tr18;
 		case 10: goto tr9;
@@ -284,7 +311,7 @@ st11:
 	if ( ++p == pe )
 		goto _test_eof11;
 case 11:
-#line 288 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 315 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
 		case 9: goto tr22;
 		case 10: goto tr13;
@@ -331,6 +358,8 @@ case 12:
 	case 11: 
 #line 37 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 	{
+			bool do_return = false;
+			bool r = false;
 			char *name_end = value_start - 1;
 			char tmp = *name_end;
 
@@ -339,28 +368,35 @@ case 12:
 
 			if(strcmp(attribute, name_start) == 0)
 			{
+				do_return = true;
+
 				if(strcmp(match, value_start) == 0)
 				{
-					return true;
+					r = true;
 				}
 				else
 				{
-					return false;
+					r = false;
 				}
 			}
 
 			*name_end = tmp;
 			*p = (*p);
+
+			if(do_return)
+			{
+				return r;
+			}
 		}
 	break;
-#line 357 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
+#line 393 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	}
 	}
 
 	_out: {}
 	}
 
-#line 74 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
+#line 83 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 
 
 	return false;

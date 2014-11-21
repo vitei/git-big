@@ -35,6 +35,8 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 		}
 
 		action set {
+			bool do_return = false;
+			bool r = false;
 			char *name_end = value_start - 1;
 			char tmp = *name_end;
 
@@ -43,18 +45,25 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 
 			if(strcmp(attribute, name_start) == 0)
 			{
+				do_return = true;
+
 				if(strcmp(match, value_start) == 0)
 				{
-					return true;
+					r = true;
 				}
 				else
 				{
-					return false;
+					r = false;
 				}
 			}
 
 			*name_end = tmp;
 			*fpc = fc;
+
+			if(do_return)
+			{
+				return r;
+			}
 		}
 
 		fragment = [^ \t\n]+ ;
