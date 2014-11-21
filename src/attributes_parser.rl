@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <string.h>
 
 #include "attributes_parser.h"
@@ -12,6 +13,7 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 	int cs;
 	char *p = (char *)data;
 	char *pe = p + size;
+	char *eof = pe;
 	char *name_start = NULL;
 	char *value_start = NULL;
 
@@ -55,14 +57,17 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 			*fpc = fc;
 		}
 
-		fragment = [^ \n]+ ;
-		name_fragment = [^ =\n]+ ;
+		fragment = [^ \t\n]+ ;
+		name_fragment = [^ =\t\n]+ ;
 		true_false_rule = ( '!'? name_fragment ) >name_start %true_false ;
 		set_rule = ( name_fragment >name_start '=' fragment >value_start ) %set ;
-		file_rule = ( fragment ( ' ' ( true_false_rule | set_rule ) )* ) ;
+		file_rule = ( fragment ( [ \t] ( true_false_rule | set_rule ) )* ) ;
+		attribute_rule = ( '[' fragment ']' fragment ( [ \t] ( true_false_rule | set_rule ) )* ) ;
 		comment = ( '#' [^\n]* ) ;
 
-		main := ( ( file_rule | comment )? '\n' )* ;
+		rule = file_rule | attribute_rule | comment ;
+
+		main := ( rule? '\n' )* rule? ;
 
 		write init;
 		write exec;
