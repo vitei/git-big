@@ -24,7 +24,7 @@ if(RAGEL)
 	add_custom_command(OUTPUT ${ATTRIBUTES_PARSER_C}
 	                   COMMAND ${RAGEL} -G2 -o ${ATTRIBUTES_PARSER_C} ${ATTRIBUTES_PARSER}
 	                   DEPENDS ${ATTRIBUTES_PARSER})
-endif() 
+endif()
 
 #-------------------------------------------------------------------------------
 # Compile
@@ -42,7 +42,7 @@ file(GLOB_RECURSE SOURCE src/**.c src/**.h)
 
 # Parser
 if(RAGEL)
-	list(REMOVE_ITEM SOURCE src/attributes_parser.c)
+	list(REMOVE_ITEM SOURCE ${PROJECT_SOURCE_DIR}/src/attributes_parser.c)
 	list(APPEND SOURCE ${ATTRIBUTES_PARSER_C})
 endif()
 
