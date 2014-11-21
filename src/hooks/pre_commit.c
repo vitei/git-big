@@ -55,7 +55,7 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 
 	if(payload.r != ERROR_NONE)
 	{
-		r = ERROR_NONE;
+		r = payload.r;
 	}
 	else if(payload.error_shown)
 	{
