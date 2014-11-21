@@ -66,12 +66,13 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 			}
 		}
 
+		ws = [ \t]+ ;
 		fragment = [^ \t\n]+ ;
 		name_fragment = [^ =\t\n]+ ;
 		true_false_rule = ( '!'? name_fragment ) >name_start %true_false ;
 		set_rule = ( name_fragment >name_start '=' fragment >value_start ) %set ;
-		file_rule = ( fragment ( [ \t] ( true_false_rule | set_rule ) )* ) ;
-		attribute_rule = ( '[' fragment ']' fragment ( [ \t] ( true_false_rule | set_rule ) )* ) ;
+		file_rule = ( fragment ( ws ( true_false_rule | set_rule ) )* ) ;
+		attribute_rule = ( '[' fragment ']' fragment ( ws ( true_false_rule | set_rule ) )* ) ;
 		comment = ( '#' [^\n]* ) ;
 
 		rule = file_rule | attribute_rule | comment ;

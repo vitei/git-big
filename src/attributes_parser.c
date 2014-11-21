@@ -154,11 +154,11 @@ st1:
 case 1:
 #line 156 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
-		case 32: goto st0;
+		case 9: goto st1;
+		case 10: goto st0;
+		case 32: goto st1;
 		case 61: goto st0;
 	}
-	if ( 9 <= (*p) && (*p) <= 10 )
-		goto st0;
 	goto tr0;
 tr0:
 #line 21 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
@@ -186,8 +186,8 @@ case 2:
 		goto st0;
 	if ( 9 <= (*p) && (*p) <= 10 )
 		goto st0;
-	goto tr2;
-tr2:
+	goto tr3;
+tr3:
 #line 25 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 	{
 			value_start = p;
@@ -267,9 +267,9 @@ st8:
 case 8:
 #line 269 "/Users/ben/Tools/git-big/master/build/attributes_parser.c"
 	switch( (*p) ) {
-		case 9: goto st12;
+		case 9: goto st8;
 		case 10: goto st3;
-		case 32: goto st12;
+		case 32: goto st8;
 		case 61: goto st12;
 	}
 	goto tr15;
@@ -396,7 +396,7 @@ case 12:
 	_out: {}
 	}
 
-#line 83 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
+#line 84 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
 
 
 	return false;
