@@ -1,3 +1,4 @@
+#include <fnmatch.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -8,22 +9,42 @@
 	write data;
 }%%
 
-bool attributes_parser_match(const void *data, unsigned long size, const char *attribute, const char *match)
+bool attributes_parser_match(const void *data, unsigned long size, const char *repo_path, const char *attribute, const char *match)
 {
 	int cs;
 	char *p = (char *)data;
 	char *pe = p + size;
 	char *eof = pe;
+	char *glob_start = NULL;
+	char *glob_end = NULL;
 	char *name_start = NULL;
+	char *name_end = NULL;
 	char *value_start = NULL;
+	char *value_end = NULL;
 
 	%%{
+		action glob_start {
+			glob_start = fpc;
+		}
+
+		action glob_end {
+			glob_end = fpc;
+		}
+
 		action name_start {
 			name_start = fpc;
 		}
 
+		action name_end {
+			name_end = fpc;
+		}
+
 		action value_start {
 			value_start = fpc;
+		}
+
+		action value_end {
+			value_end = fpc;
 		}
 
 		action true_false {
@@ -37,13 +58,16 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 		action set {
 			bool do_return = false;
 			bool r = false;
-			char *name_end = value_start - 1;
-			char tmp = *name_end;
+			char glob_end_tmp = *glob_end;
+			char name_end_tmp = *name_end;
+			char value_end_tmp = *value_end;
 
+			*glob_end = '\0';
 			*name_end = '\0';
-			*fpc = '\0';
+			*value_end = '\0';
 
-			if(strcmp(attribute, name_start) == 0)
+			if(   fnmatch(glob_start, repo_path, 0) == 0
+			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;
 
@@ -57,8 +81,9 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 				}
 			}
 
-			*name_end = tmp;
-			*fpc = fc;
+			*glob_end = glob_end_tmp;
+			*name_end = name_end_tmp;
+			*value_end = value_end_tmp;
 
 			if(do_return)
 			{
@@ -69,9 +94,9 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *a
 		ws = [ \t]+ ;
 		fragment = [^ \t\n]+ ;
 		name_fragment = [^ =\t\n]+ ;
-		true_false_rule = ( '!'? name_fragment ) >name_start %true_false ;
-		set_rule = ( name_fragment >name_start '=' fragment >value_start ) %set ;
-		file_rule = ( fragment ( ws ( true_false_rule | set_rule ) )* ) ;
+		true_false_rule = ( '!'? name_fragment ) >name_start %name_end %true_false ;
+		set_rule = ( name_fragment >name_start %name_end '=' fragment >value_start %value_end ) %set ;
+		file_rule = ( fragment >glob_start %glob_end ( ws ( true_false_rule | set_rule ) )* ) ;
 		attribute_rule = ( '[' fragment ']' fragment ( ws ( true_false_rule | set_rule ) )* ) ;
 		comment = ( '#' [^\n]* ) ;
 

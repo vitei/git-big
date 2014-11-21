@@ -133,7 +133,7 @@ static enum Error match_index(bool *is_match, git_index *idx, const char *repo_a
 	data = git_blob_rawcontent(blob);
 	data_size = git_blob_rawsize(blob);
 
-	*is_match = attributes_parser_match(data, data_size, attribute, match);
+	*is_match = attributes_parser_match(data, data_size, repo_path, attribute, match);
 
 	git_blob_free(blob);
 error_git_blob_lookup:
