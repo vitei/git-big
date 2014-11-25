@@ -4,8 +4,7 @@ script:
     - mkdir build
     - cd build
     - cmake ..
-    - cmake --build . --target install
-    - ctest
+    - cmake --build .
 
 before_script:
     - sudo apt-get update -qq
