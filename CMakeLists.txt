@@ -27,6 +27,16 @@ if(RAGEL)
 endif()
 
 #-------------------------------------------------------------------------------
+# libgit2
+#-------------------------------------------------------------------------------
+
+set(BUILD_SHARED_LIBS OFF CACHE STRING "Build Shared Library (OFF for Static)" FORCE)
+set(BUILD_CLAR OFF CACHE STRING "Build Tests using the Clar suite" FORCE)
+set(USE_SSH OFF CACHE STRING "Link with libssh to enable SSH support" FORCE)
+add_subdirectory(3rdparty/libgit2)
+include_directories(${CMAKE_SOURCE_DIR}/3rdparty/libgit2/include)
+
+#-------------------------------------------------------------------------------
 # Compile
 #-------------------------------------------------------------------------------
 
