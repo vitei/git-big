@@ -1,7 +1,7 @@
-#include <fnmatch.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "attributes.h"
 #include "attributes_parser.h"
 
 %%{
@@ -66,7 +66,7 @@ bool attributes_parser_match(const void *data, unsigned long size, const char *r
 			*name_end = '\0';
 			*value_end = '\0';
 
-			if(   fnmatch(glob_start, repo_path, 0) == 0
+			if(   attributes_fnmatch(repo_path, glob_start)
 			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;

@@ -1,3 +1,4 @@
+#include <fnmatch.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <string.h>
@@ -104,6 +105,11 @@ error_match_index:
 error_git_repository_index:
 
 	return r;
+}
+
+bool attributes_fnmatch(const char *filename, const char *filter)
+{
+	return fnmatch(filter, filename, 0) == 0;
 }
 
 static enum Error match_index(bool *is_match, git_index *idx, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *match)

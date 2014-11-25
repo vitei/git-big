@@ -1,9 +1,9 @@
 
 #line 1 "/Users/ben/Tools/git-big/master/src/attributes_parser.rl"
-#include <fnmatch.h>
 #include <stdio.h>
 #include <string.h>
 
+#include "attributes.h"
 #include "attributes_parser.h"
 
 
@@ -80,7 +80,7 @@ tr16:
 			*name_end = '\0';
 			*value_end = '\0';
 
-			if(   fnmatch(glob_start, repo_path, 0) == 0
+			if(   attributes_fnmatch(repo_path, glob_start)
 			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;
@@ -171,7 +171,7 @@ tr15:
 			*name_end = '\0';
 			*value_end = '\0';
 
-			if(   fnmatch(glob_start, repo_path, 0) == 0
+			if(   attributes_fnmatch(repo_path, glob_start)
 			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;
@@ -316,7 +316,7 @@ tr27:
 			*name_end = '\0';
 			*value_end = '\0';
 
-			if(   fnmatch(glob_start, repo_path, 0) == 0
+			if(   attributes_fnmatch(repo_path, glob_start)
 			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;
@@ -470,7 +470,7 @@ case 12:
 			*name_end = '\0';
 			*value_end = '\0';
 
-			if(   fnmatch(glob_start, repo_path, 0) == 0
+			if(   attributes_fnmatch(repo_path, glob_start)
 			   && strcmp(attribute, name_start) == 0)
 			{
 				do_return = true;
