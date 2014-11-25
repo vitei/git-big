@@ -1,3 +1,0 @@
-[submodule "tests/ctf"]
-	path = tests/ctf
-	url = https://github.com/vitei/ctf.git
