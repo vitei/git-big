@@ -1,0 +1,26 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that a big file is correctly added"
+
+git init
+git big init
+
+echo "*.txt filter=big" > .gitattributes
+
+echo "Test" > test.txt
+
+git add test.txt
+
+C [ -f .git/big/1c68ea370b40c06fcaf7f26c8b1dba9d9caf5dea ]
+R 0
+
+C [ $(cat .git/big/1c68ea370b40c06fcaf7f26c8b1dba9d9caf5dea) = "Test" ]
+R 0
+
+C git show :test.txt
+O "GIT-BIG00011c68ea370b40c06fcaf7f26c8b1dba9d9caf5dea"
+
+F
+

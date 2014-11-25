@@ -1,0 +1,23 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that a big file cannot be committed with an incorrect .gitattributes file"
+
+git init
+git big init
+
+echo "*.bmp filter=big" > .gitattributes
+
+git add .gitattributes
+
+echo "*.txt filter=big" > .gitattributes
+echo "Test" > test.txt
+
+git add test.txt
+
+C git commit -m "Test..."
+R 1
+
+F
+

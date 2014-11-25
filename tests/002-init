@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that git big init works correctly on a git repo"
+
+git init
+C git big init
+R 0
+
+C [ -d .git/big ]
+R 0
+
+F
+

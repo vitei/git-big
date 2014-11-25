@@ -74,9 +74,22 @@ install(TARGETS git-big DESTINATION bin)
 
 enable_testing()
 
-add_test(cli ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/001-cli.t)
-add_test(init ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/002-init.t)
-add_test(clean ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/003-clean-filter.t)
-add_test(smudge ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/004-smudge-filter.t)
-add_test(commit ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/005-commit-hook.t)
+add_test(NAME cli-help
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/001-cli-help)
+add_test(NAME init
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/002-init)
+add_test(NAME init-empty
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/003-init-empty)
+add_test(NAME clean-filter
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/004-clean-filter)
+add_test(NAME smudge-filter
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/005-smudge-filter)
+add_test(NAME commit-hook
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/006-commit-hook)
+add_test(NAME commit-hook-incorrect
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/007-commit-hook-incorrect)
+add_test(NAME big-push-hook
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/008-big-push-hook)
+add_test(NAME big-push-hook-incorrect
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/009-big-push-hook-incorrect)
 

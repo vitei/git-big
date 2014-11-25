@@ -1,0 +1,19 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that a big file can be committed with the .gitattributes file"
+
+git init
+git big init
+
+echo "*.txt filter=big" > .gitattributes
+echo "Test" > test.txt
+
+git add .gitattributes test.txt
+
+C git commit -m "Test..."
+R 0
+
+F
+

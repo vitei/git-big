@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that a push is aborted on error"
+
+mkdir remote
+
+cd remote
+git init --bare
+cd ..
+
+git clone file://${TEST_DIRECTORY}/remote repo
+cd repo
+
+git big init
+
+echo "*.txt filter=big" > .gitattributes
+
+echo -e "#!/bin/sh\n\necho \"Pushing \$1...\" 1>&2\ncp \$2 ../bigfiles/\$1" > .git/hooks/big-push
+chmod +x .git/hooks/big-push
+
+echo "Test" > test.txt
+
+git add .gitattributes test.txt
+git commit -m "Test..."
+
+C git push -u origin master
+R 1
+
+F
+

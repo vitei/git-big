@@ -1,0 +1,35 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check a file can be correctly checked out"
+
+git init
+git big init
+
+echo "*.txt filter=big" > .gitattributes
+echo "Test1" > test.txt
+
+git add .gitattributes test.txt
+
+git commit -m "Version 1"
+
+echo "Test2" > test.txt
+
+git add test.txt
+
+git commit -m "Version 2"
+
+C git checkout HEAD^
+R 0
+
+C cat test.txt
+O "Test1"
+
+git checkout master
+
+C cat test.txt
+O "Test2"
+
+F
+

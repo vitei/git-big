@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that git big help works"
+
+C git big
+R 0
+O "usage: git big <command> [<args>]
+
+The following are git-big commands:
+   init   Initialise git-big for this repository"
+
+F
+

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check git big init does not work on a non-git folder"
+
+C git big init
+R 1
+E "Invalid git repository"
+
+C [ -d .git/big ]
+R 1
+
+F
+
