@@ -1,0 +1,52 @@
+#!/bin/bash
+
+source "$(dirname $0)/framework.sh"
+
+T "Check that a big file can be pulled"
+
+mkdir bigfiles
+mkdir remote
+
+cd remote
+git init --bare
+cd ..
+
+git clone file://${TEST_DIRECTORY}/remote repo
+cd repo
+
+git big init
+
+echo "*.txt filter=big" > .gitattributes
+
+echo -e "#!/bin/sh\n\necho \"Pushing \$1...\" 1>&2\ncp \$2 ../bigfiles/\$1" > .git/hooks/big-push
+chmod +x .git/hooks/big-push
+
+echo "Test" > test.txt
+
+git add .gitattributes test.txt
+git commit -m "Test..."
+
+git push -u origin master
+
+cd ..
+
+git clone --no-checkout file://${TEST_DIRECTORY}/remote repo2
+
+cd repo2
+
+git big init
+
+echo -e "#!/bin/sh\n\necho \"Pulling \$1...\" 1>&2\ncp ../bigfiles/\$1 \$2" > .git/hooks/big-pull
+chmod +x .git/hooks/big-pull
+
+C git checkout master
+R 0
+
+C [ -f  .git/big/1c68ea370b40c06fcaf7f26c8b1dba9d9caf5dea ]
+R 0
+
+C cat  test.txt
+O "Test"
+
+F
+
