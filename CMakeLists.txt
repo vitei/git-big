@@ -68,7 +68,7 @@ if(APPLE)
 elseif(LINUX)
 	target_link_libraries(git-big crypto)
 elseif(WIN32)
-
+	target_link_libraries(git-big shlwapi)
 endif()
 
 #-------------------------------------------------------------------------------

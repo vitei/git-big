@@ -1,7 +1,14 @@
-#include <fnmatch.h>
 #include <libgen.h>
 #include <stdio.h>
 #include <string.h>
+
+#if defined(__APPLE__) || defined(__linux)
+	#include <fnmatch.h>
+#elif defined(_WIN32)
+	#include <Shlwapi.h>
+#else
+	#error Unsupported platform
+#endif
 
 #include "attributes.h"
 #include "attributes_parser.h"
@@ -109,7 +116,11 @@ error_git_repository_index:
 
 bool attributes_fnmatch(const char *filename, const char *filter)
 {
+#if defined(__APPLE__) || defined(__linux)
 	return fnmatch(filter, filename, 0) == 0;
+#elif defined(_WIN32)
+	return PathMatchSpec(filename, filter) == TRUE;
+#endif
 }
 
 static enum Error match_index(bool *is_match, git_index *idx, const char *repo_attributes_path, const char *repo_path, const char *attribute, const char *match)
