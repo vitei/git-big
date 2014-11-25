@@ -74,5 +74,8 @@ install(TARGETS git-big DESTINATION bin)
 
 enable_testing()
 
-add_test(integration_tests ${PROJECT_SOURCE_DIR}/tests/ctf/ctf .)
+add_test(cli ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/001-cli.t)
+add_test(init ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/002-init.t)
+add_test(clean ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/003-clean-filter.t)
+add_test(commit ${PROJECT_SOURCE_DIR}/tests/ctf/ctf ${PROJECT_SOURCE_DIR}/tests/004-commit-hook.t)
 
