@@ -126,6 +126,12 @@ static void touch_repo_file(const char *filename)
 	char path[1024] = { '\0' };
 	const char *working_dir = git_repository_workdir(repo_handle);
 
+#if defined(_WIN32)
+	HANDLE hFile;
+	FILETIME ft;
+    SYSTEMTIME st;
+#endif
+
 	// FIXME: unsafe for large paths
 	snprintf(path, sizeof(path), "%s%s", working_dir, filename);
 
@@ -133,10 +139,6 @@ static void touch_repo_file(const char *filename)
 #if defined(__APPLE__) || defined(__linux)
 	utimes(path, NULL);
 #elif defined(_WIN32)
-	HANDLE hFile;
-	FILETIME ft;
-    SYSTEMTIME st;
-
 	hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
 
 	GetSystemTime(&st);
