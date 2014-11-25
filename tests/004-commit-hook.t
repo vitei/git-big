@@ -10,7 +10,7 @@ Check that a big file can be committed with the .gitattributes file
  $ git commit -m "Test..."
  = 0
 
-Check that a big file cannot be committed with the .gitattributes file
+Check that a big file cannot be committed with an incorrect .gitattributes file
  $ git init
  $ git big init
  $ echo "*.bmp filter=big"
