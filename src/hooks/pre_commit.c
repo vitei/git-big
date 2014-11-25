@@ -21,11 +21,19 @@ enum Error hooks_pre_commit_run(int argc, char *argv[])
 	enum AttributesStatus status = ATTRIBUTES_STATUS_UNMODIFIED;
 	struct AttributeCheckPayload payload = { false, ERROR_NONE };
 
-	r = attributes_get_status(&status);
-
-	if(r != ERROR_NONE)
+	if(git_repository_is_empty(repo_handle))
 	{
-		goto error_attributes_get_status;
+		// Can't run a diff on an empty repository
+		status = ATTRIBUTES_STATUS_MODIFIED;
+	}
+	else
+	{
+		r = attributes_get_status(&status);
+
+		if(r != ERROR_NONE)
+		{
+			goto error_attributes_get_status;
+		}
 	}
 
 	switch(status)
