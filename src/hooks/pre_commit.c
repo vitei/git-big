@@ -1,5 +1,12 @@
 #include <stdio.h>
-#include <sys/time.h>
+
+#if defined(__APPLE__) || defined(__linux)
+	#include <sys/time.h>
+#elif defined(_WIN32)
+	#include <windows.h>
+#else
+	#error Unsupported platform
+#endif
 
 #include "pre_commit.h"
 #include "../attributes.h"
@@ -123,6 +130,21 @@ static void touch_repo_file(const char *filename)
 	snprintf(path, sizeof(path), "%s%s", working_dir, filename);
 
 	// Touch the file!
+#if defined(__APPLE__) || defined(__linux)
 	utimes(path, NULL);
+#elif defined(_WIN32)
+	HANDLE hFile;
+	FILETIME ft;
+    SYSTEMTIME st;
+
+	hFile = CreateFile(path, GENERIC_READ, FILE_SHARE_READ, NULL, OPEN_EXISTING, 0, NULL);
+
+	GetSystemTime(&st);
+	SystemTimeToFileTime(&st, &ft);
+
+	SetFileTime(hFile, (LPFILETIME)NULL, (LPFILETIME)NULL,  &ft); 
+
+	CloseHandle(hFile);
+#endif
 }
 
