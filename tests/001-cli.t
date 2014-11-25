@@ -4,7 +4,5 @@ Check that git big help works
  - "usage: git big <command> [<args>]"
  - ""
  - "The following are git-big commands:"
- - "   gc     Clean up file cache"
  - "   init   Initialise git-big for this repository"
- - "   sync   Synchronise big files"
 
