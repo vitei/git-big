@@ -48,11 +48,13 @@ plugin requires the following to be present on your system:
 
 <p>
 To build on a Linux or OSX system simply run:
-<code class="block">git clone https://github.com/vitei/git-big.git
+<code class="block">git clone --recurse-submodules https://github.com/vitei/git-big.git
 cd git-big
 mkdir build && cd build
 cmake ..
 sudo cmake --build . --target install</code>
+Building on Windows can be achieved by following the same steps, however the
+MinGW system is currently required.
 </p>
 
 <h2>Initialising a repository</h2>
