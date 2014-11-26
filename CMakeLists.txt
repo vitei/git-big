@@ -33,6 +33,12 @@ endif()
 set(BUILD_SHARED_LIBS OFF CACHE STRING "Build Shared Library (OFF for Static)" FORCE)
 set(BUILD_CLAR OFF CACHE STRING "Build Tests using the Clar suite" FORCE)
 set(USE_SSH OFF CACHE STRING "Link with libssh to enable SSH support" FORCE)
+
+# This is a nasty hack to stop libgit2 being installed
+set(BIN_INSTALL_DIR "${PROJECT_BINARY_DIR}/libgit2/bin" CACHE PATH "Where to install binaries to." FORCE)
+set(LIB_INSTALL_DIR "${PROJECT_BINARY_DIR}/libgit2/lib" CACHE PATH "Where to install libraries to." FORCE)
+set(INCLUDE_INSTALL_DIR "${PROJECT_BINARY_DIR}/libgit2/include" CACHE PATH "Where to install headers to." FORCE)
+
 add_subdirectory(3rdparty/libgit2)
 include_directories(${CMAKE_SOURCE_DIR}/3rdparty/libgit2/include)
 
