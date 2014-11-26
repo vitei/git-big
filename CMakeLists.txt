@@ -104,4 +104,6 @@ add_test(NAME big-push-hook-incorrect
          COMMAND ${PROJECT_SOURCE_DIR}/tests/009-big-push-hook-incorrect)
 add_test(NAME big-pull-hook
          COMMAND ${PROJECT_SOURCE_DIR}/tests/010-big-pull-hook)
+add_test(NAME big-pull-hook-incorrect
+         COMMAND ${PROJECT_SOURCE_DIR}/tests/011-big-pull-hook-incorrect)
 
