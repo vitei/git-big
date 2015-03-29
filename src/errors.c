@@ -10,6 +10,7 @@ const char *error_string_table[ERROR_MAX] =
 
 	"Could not create the git-big database directory",
 	"Could not find database file, please run git big sync",
+	"Could not insert file into database (could not create directory)",
 	"Could not insert file into database",
 	"Corrupt database file",
 

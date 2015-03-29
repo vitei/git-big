@@ -29,6 +29,8 @@ static const char ID_HEADER[DB_ID_HEADER_SIZE] = { 'G', 'I', 'T',
                                                    'B', 'I', 'G' };
 
 static const char *get_path(void);
+static void get_file_dir(char *const path, size_t path_size, char *hash);
+static void get_file_path(char *const path, size_t path_size, char *hash);
 
 enum Error db_init(void)
 {
@@ -61,7 +63,8 @@ enum Error db_file_path(char *path, size_t path_length, const char *id)
 	}
 
 	hash[DB_ID_HASH_SIZE] = '\0';
-	snprintf(path, path_length, "%s%s", get_path(), hash); // FIXME: buffer overflow
+
+	get_file_path(path, path_length, hash);
 
 error_db_id_parse:
 
@@ -86,7 +89,7 @@ enum Error db_file_query(FILE *output, char *id)
 
 	hash[DB_ID_HASH_SIZE] = '\0';
 
-	snprintf(buffer, sizeof(buffer), "%s%s", get_path(), hash);
+	get_file_path(buffer, sizeof(buffer), hash);
 
 	file = fopen(buffer, "r");
 
@@ -208,7 +211,16 @@ enum Error db_file_insert(char *id, FILE *input)
 		sprintf(&hash[j], "%02x", (unsigned char)buffer[i]);
 	}
 
-	snprintf(buffer, sizeof(buffer), "%s%s", get_path(), hash);
+	get_file_dir(buffer, sizeof(buffer), hash);
+	error = mkdir(buffer, 0777);
+
+	if(error != 0 && errno != EEXIST)
+	{
+		r = ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_DIRECTORY;
+		goto error_mkdir;
+	}
+
+	get_file_path(buffer, sizeof(buffer), hash);
 
 	error = rename(tmp_path, buffer);
 
@@ -219,6 +231,8 @@ enum Error db_file_insert(char *id, FILE *input)
 	}
 
 	db_id_generate(id, &version, hash);
+
+error_mkdir:
 
 #if defined(_WIN32)
 error_crypt_get_hash_param:
@@ -290,5 +304,27 @@ static const char *get_path(void)
 	}
 
 	return (const char *)path;
+}
+
+static void get_file_dir(char *const path, size_t path_size, char *hash)
+{
+	char hash_prefix[3];
+
+	hash_prefix[0] = hash[0];
+	hash_prefix[1] = hash[1];
+	hash_prefix[2] = '\0';
+
+	snprintf(path, path_size, "%s%s/", get_path(), hash_prefix); // FIXME: buffer overflow
+}
+
+static void get_file_path(char *const path, size_t path_size, char *hash)
+{
+	char buffer[1024] = { '\0' };
+
+	get_file_dir(buffer, sizeof(buffer), hash);
+
+	hash = &hash[2];
+
+	snprintf(path, path_size, "%s%s", buffer, hash); // FIXME: buffer overflow
 }
 
