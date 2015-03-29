@@ -34,6 +34,9 @@ C()
 	TEST_RETURN=$?
 	TEST_STDOUT=$(cat $stdout)
 	TEST_STDERR=$(cat $stderr)
+	
+	echo $TEST_STDOUT
+	echo $TEST_STDERR
 }
 
 R()

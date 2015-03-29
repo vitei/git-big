@@ -36,13 +36,13 @@ cd repo2
 
 git big init
 
-echo -e "#!/bin/sh\n\necho \"Pulling \$1...\" 1>&2\ncp ../bigfiles/\$1 \$2" > .git/hooks/big-pull
+echo -e "#!/bin/sh\n\necho \"Pulling \$1...\" 1>&2\nmkdir \$(dirname \$2)\ncp ../bigfiles/\$1 \$2" > .git/hooks/big-pull
 chmod +x .git/hooks/big-pull
 
 C git checkout master
 R 0
 
-C [ -f  .git/big/1c68ea370b40c06fcaf7f26c8b1dba9d9caf5dea ]
+C [ -f  .git/big/1c/68ea370b40c06fcaf7f26c8b1dba9d9caf5dea ]
 R 0
 
 C cat  test.txt
