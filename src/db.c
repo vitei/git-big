@@ -232,6 +232,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 	db_id_generate(id, &version, hash);
 
+error_rename:
 error_mkdir:
 
 #if defined(_WIN32)
@@ -243,7 +244,6 @@ error_crypt_create_hash:
 error_crypt_acquire_context:
 #endif
 
-error_rename:
 error_fopen:
 
 	return r;
