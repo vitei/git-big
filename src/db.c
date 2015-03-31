@@ -224,7 +224,7 @@ enum Error db_file_insert(char *id, FILE *input)
 
 	error = rename(tmp_path, buffer);
 
-	if(error != 0)
+	if(error != 0 && errno != EEXIST)
 	{
 		r = ERROR_DB_FILE_INSERT_COULD_NOT_CREATE_FILE;
 		goto error_rename;
