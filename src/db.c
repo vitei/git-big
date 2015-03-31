@@ -91,7 +91,7 @@ enum Error db_file_query(FILE *output, char *id)
 
 	get_file_path(buffer, sizeof(buffer), hash);
 
-	file = fopen(buffer, "r");
+	file = fopen(buffer, "rb");
 
 	if(!file)
 	{
