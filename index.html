@@ -124,7 +124,7 @@ And here is the corresponding <code>big-pull</code>:
 <code class="block">#!/bin/sh
 
 echo &quot;Pulling $1...&quot; 1>&amp;2
-mkdir $(dirname -p $2)
+mkdir -p $(dirname $2)
 scp username@host:data_dir/$1 $2</code>
 Hopefully you will see how easy it is to swap SCP out for any other program
 to make your own file transports!
